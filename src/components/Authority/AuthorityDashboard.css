@@ -1,0 +1,68 @@
+.authority-dashboard-container {
+  padding: 32px 40px 40px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.subtitle { color: var(--dark-gray-color); margin-bottom: 18px; }
+.authority-grid { display:flex; gap:28px; align-items:flex-start; }
+.main-column { flex: 1 1 0; }
+.side-column { width: 340px; }
+.card { background: var(--white-color); padding: 28px; border-radius: 14px; box-shadow: var(--box-shadow); margin-bottom: 24px; }
+
+/* Profile card styles to match design */
+.profile-card { padding: 28px 32px; border-radius: 12px; }
+.profile-row { display:flex; gap:26px; align-items:center; }
+.profile-avatar { width:120px; height:120px; border-radius:50%; background:var(--light-gray-color); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:28px; overflow:hidden; }
+.profile-avatar img { width:100%; height:100%; object-fit:cover; display:block; }
+.profile-bio { margin-top:10px; color:var(--dark-gray-color); max-width:720px; }
+.muted { color:var(--dark-gray-color); }
+.area-card { padding: 26px 28px; border-radius:12px; }
+.area-card select { margin-top:14px; padding:12px 14px; border-radius:10px; border:1px solid var(--medium-gray-color); width:100%; background: white; }
+.notification-item { display:flex; gap:12px; align-items:center; justify-content:space-between; background: transparent; }
+.notifications-card { margin-top:18px; }
+.notifications-card .notification-item-inner { display:flex; gap:14px; align-items:center; background: white; padding:12px; border-radius:10px; border:1px solid rgba(0,0,0,0.04); }
+.notif-thumb { width:84px; height:64px; background:#eee; border-radius:8px; display:flex; align-items:center; justify-content:center; }
+
+/* Security card: pill-like items with icon on the left */
+.security-card { padding: 22px; }
+.security-card .security-item { padding:12px; border-radius:10px; background: #f7f8fa; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; border: 1px solid rgba(0,0,0,0.03); }
+.security-card .security-item .label { display:flex; gap:12px; align-items:center; }
+.security-card .security-item .label span { color:var(--dark-gray-color); font-weight:600; }
+
+/* Icon circle size in security items */
+.security-card .icon { width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:10px; color: white; }
+.security-card .icon svg { width:18px; height:18px; }
+
+/* Icon colors inside security items */
+.icon-blue { background: #2b6ef6; }
+.icon-green { background: #19c37d; }
+.icon-gray { background: #6b7280; }
+.security-card .security-item svg { color: rgba(0,0,0,0.45); }
+
+/* Steps card styles replacing the dashboard */
+.steps-card { padding: 28px; border-radius: 14px; }
+.steps-list { list-style: none; counter-reset: step; padding: 0; margin: 0; }
+.steps-list .step { display:flex; gap:18px; align-items:flex-start; padding:14px 0; border-bottom:1px solid rgba(0,0,0,0.04); }
+.steps-list .step:last-child { border-bottom: none; }
+.step-number { width:44px; height:44px; border-radius:50%; background:var(--primary-color); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; flex:0 0 44px; }
+.step-content { flex:1; }
+.checklist.card { margin-top:18px; padding:18px; background: #fbfcfd; border-radius:10px; }
+.required-list { margin:8px 0 0 0; padding-left:18px; }
+.required-list li { margin-bottom:6px; }
+.note { margin-top:12px; padding:12px; background: #f7faf8; border-radius:10px; }
+.start-button { background:var(--primary-color); color:white; border:none; padding:10px 16px; border-radius:8px; cursor:pointer; font-weight:600; }
+
+@media (max-width: 700px) {
+  .step-number { width:36px; height:36px; font-size:14px; }
+  .authority-dashboard-container { padding:20px; }
+}
+
+@media (max-width: 900px) {
+  .authority-grid { flex-direction:column; }
+  .side-column { width:100%; }
+}
+
+/* Tweak typography to better match example */
+.authority-dashboard-container h1 { font-size:28px; margin-bottom:18px; }
+.authority-dashboard-container h2 { margin:0; }
+.authority-dashboard-container h3 { margin-top:0; margin-bottom:12px; }

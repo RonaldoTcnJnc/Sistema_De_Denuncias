@@ -1,0 +1,511 @@
+.homepage-wrapper {
+  width: 100%;
+}
+
+.home-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Header */
+.home-header {
+  background-color: var(--white-color);
+  padding: 15px 0;
+  border-bottom: 1px solid var(--medium-gray-color);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+/* Reducir padding izquierdo solo en el header para acercar el logo al borde */
+.home-header .home-container {
+  padding-left: 8px;
+  padding-right: 20px;
+}
+
+.logo {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: bold;
+  font-size: 28px;
+  color: var(--text-color);
+  z-index: 1100;
+}
+
+.logo-img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  display: inline-block;
+}
+
+.logo-text {
+  display: inline-block;
+}
+
+/* Contenedor a la derecha: navegación + botones */
+.header-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+/* Asegurar que el contenedor del header tenga suficiente padding-left
+   para que el contenido principal no quede oculto por el logo absoluto */
+.home-header .home-container {
+  padding-left: 80px;
+  /* espacio para el logo (ajusta si quieres más/menos) */
+}
+
+.home-header nav a {
+  margin: 0 15px;
+  text-decoration: none;
+  color: var(--dark-gray-color);
+  font-weight: 600;
+  font-size: 1.05rem;
+  transition: color 0.3s;
+}
+
+.home-header nav a:hover {
+  color: var(--primary-color);
+}
+
+.btn {
+  padding: 15px 30px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.05rem;
+  transition: all 0.25s ease;
+  display: inline-block;
+  text-align: center;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #3a58dd;
+}
+
+.btn-secondary {
+  background-color: var(--light-gray-color);
+  color: var(--text-color);
+  border: 1px solid var(--medium-gray-color);
+  margin-left: 10px;
+}
+
+.btn-secondary:hover {
+  background-color: var(--medium-gray-color);
+}
+
+/* Hero Section */
+.hero-section {
+  position: relative;
+  color: white;
+  height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background-image: url('../../assets/Cusco.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 800px;
+  padding: 0 20px;
+}
+
+.hero-content h1 {
+  font-size: 48px;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
+  white-space: nowrap;
+  display: block;
+  width: 100%;
+  text-align: center;
+}
+
+.hero-content p {
+  font-size: 22px;
+  margin-bottom: 2rem;
+  line-height: 1.5;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+.btn-success {
+  background-color: var(--success-color);
+  color: white;
+  margin-right: 20px;
+  padding: 14px 34px;
+  font-size: 1.15rem;
+}
+
+.btn-success:hover {
+  background-color: #25a25a;
+  transform: scale(1.03);
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: white;
+  border: 3px solid white;
+  padding: 14px 34px;
+  font-size: 1.15rem;
+}
+
+.btn-outline:hover {
+  background-color: white;
+  color: var(--text-color);
+  transform: scale(1.03);
+}
+
+/* Process Section */
+.process-section {
+  padding: 80px 0;
+  background-color: var(--page-bg, #f6f7fb);
+}
+
+.process-section .home-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.process-section h2 {
+  font-size: 34px;
+  margin-bottom: 8px;
+  text-align: center;
+  color: var(--text-color);
+}
+
+.process-section p {
+  text-align: center;
+  max-width: 760px;
+  color: var(--muted-color, #6b7280);
+  margin-top: 0;
+}
+
+.steps-container {
+  display: flex;
+  justify-content: center;
+  gap: 72px;
+  margin-top: 34px;
+  align-items: flex-start;
+}
+
+.step-card {
+  background: transparent;
+  padding: 0;
+  border-radius: 8px;
+  width: 260px;
+  text-align: center;
+}
+
+.step-icon {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 18px auto;
+  background: white;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+}
+
+.step-icon svg {
+  width: 30px;
+  height: 30px;
+}
+
+.step-icon.info svg {
+  color: #3b82f6;
+}
+
+.step-icon.review svg {
+  color: #06b6a4;
+}
+
+.step-icon.resolve svg {
+  color: #10b981;
+}
+
+.step-card h3 {
+  font-size: 16px;
+  margin: 8px 0 6px;
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+.step-card p {
+  color: var(--muted-color, #6b7280);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .process-section {
+    padding: 48px 0;
+  }
+
+  .process-section h2 {
+    font-size: 28px;
+  }
+
+  .steps-container {
+    flex-direction: column;
+    gap: 22px;
+    margin-top: 20px;
+  }
+
+  .step-card {
+    width: 100%;
+    max-width: 520px;
+  }
+}
+
+/* Footer */
+.home-footer {
+  background-color: var(--text-color);
+  color: var(--white-color);
+  padding: 30px 0;
+}
+
+.home-footer p {
+  color: var(--medium-gray-color);
+}
+
+.social-icons a {
+  color: white;
+  margin-left: 15px;
+  font-size: 20px;
+}
+
+.social-icons a:hover {
+  color: var(--primary-color);
+}
+
+/* Navbar improvements */
+.home-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* Nav right */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 20px;
+}
+
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  color: #3b4a57;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.12s, color 0.12s, transform 0.08s;
+}
+
+.nav-link:hover {
+  background: rgba(52, 152, 219, 0.06);
+  transform: translateY(-1px);
+}
+
+.nav-link.active {
+  background: rgba(52, 152, 219, 0.13);
+  color: #124a8d;
+}
+
+.nav-help {
+  background: transparent;
+  border: 1px solid #3498db;
+  color: #3498db;
+  padding: 6px 14px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-help:hover {
+  background: #3498db;
+  color: #fff;
+}
+
+/* Small screens */
+@media (max-width: 720px) {
+  .nav-right {
+    gap: 6px;
+  }
+
+  .nav-link .link-text {
+    display: none;
+  }
+}
+
+/* Mobile responsive improvements */
+@media (max-width: 768px) {
+
+  /* Header fixes */
+  .home-header {
+    padding: 10px 0;
+  }
+
+  .home-header .home-container {
+    padding-left: 10px;
+    padding-right: 10px;
+    flex-wrap: wrap;
+  }
+
+  .logo {
+    position: relative;
+    left: 0;
+    top: 0;
+    transform: none;
+    font-size: 20px;
+  }
+
+  .logo-img {
+    width: 28px;
+    height: 28px;
+  }
+
+  .logo-text {
+    font-size: 18px;
+  }
+
+  .header-right {
+    width: 100%;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .home-header nav {
+    display: none;
+    /* Ocultar navegación en móvil */
+  }
+
+  .btn {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+
+  .btn-secondary {
+    margin-left: 0;
+  }
+
+  /* Hero section */
+  .hero-section {
+    height: 60vh;
+    min-height: 400px;
+  }
+
+  .hero-content h1 {
+    font-size: 28px;
+    white-space: normal;
+  }
+
+  .hero-content p {
+    font-size: 16px;
+    margin-bottom: 1.5rem;
+  }
+
+  .btn-success,
+  .btn-outline {
+    padding: 12px 20px;
+    font-size: 14px;
+    margin-right: 0;
+    margin-bottom: 10px;
+    display: block;
+    width: 100%;
+    max-width: 280px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Process section */
+  .process-section {
+    padding: 40px 0;
+  }
+
+  .process-section h2 {
+    font-size: 24px;
+  }
+
+  .process-section p {
+    font-size: 14px;
+    padding: 0 20px;
+  }
+
+  .steps-container {
+    flex-direction: column;
+    gap: 30px;
+    padding: 0 20px;
+  }
+
+  .step-card {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo-text {
+    display: none;
+    /* Solo mostrar icono en pantallas muy pequeñas */
+  }
+
+  .btn {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .hero-content h1 {
+    font-size: 24px;
+  }
+
+  .hero-content p {
+    font-size: 14px;
+  }
+}

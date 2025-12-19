@@ -1,0 +1,31 @@
+.auth-sidebar {
+  width: 260px;
+  background: var(--white-color);
+  height: 100vh;
+  padding: 25px;
+  border-right: 1px solid var(--medium-gray-color);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  box-sizing: border-box;
+}
+.auth-brand { font-size: 22px; font-weight: bold; margin-bottom: 40px; color: var(--text-color); line-height: 1.2; }
+.auth-nav { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.auth-nav a { display: flex; align-items: center; gap: 12px; padding: 12px; text-decoration: none; color: var(--dark-gray-color); border-radius: 8px; font-weight: 500; transition: all 0.3s; }
+.sidebar-icon { width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; color: #000; }
+.auth-nav a:hover .sidebar-icon { color: var(--text-color); }
+.auth-nav a.active .sidebar-icon { color: white; }
+.auth-nav a:hover { background-color: var(--light-gray-color); color: var(--text-color); }
+.auth-nav a.active { background-color: var(--primary-color); color: white; }
+.auth-footer { padding-top: 1rem; border-top: 1px solid var(--medium-gray-color); }
+
+@media (max-width: 900px) {
+  .auth-sidebar { position: relative; width: 100%; height: auto; border-right: none; }
+}
+
+/* Profile block */
+.auth-profile { display:flex; gap:12px; align-items:center; }
+.auth-avatar { width:48px; height:48px; border-radius:50%; background: var(--light-gray-color); display:flex; align-items:center; justify-content:center; font-weight:700; color:var(--text-color); }
+.auth-info .auth-name { font-weight:700; }
+.auth-info .auth-role { color: var(--dark-gray-color); font-size:0.9rem; }

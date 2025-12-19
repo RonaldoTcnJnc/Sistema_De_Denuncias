@@ -1,0 +1,6 @@
+.kb-search input { width:100%; padding:12px 14px; border-radius:8px; border:1px solid var(--medium-gray-color); margin:14px 0 20px; }
+.kb-cards { display:flex; gap:18px; }
+.kb-card { flex:1; background:var(--white-color); padding:20px; border-radius:12px; box-shadow:var(--box-shadow); }
+.muted { color:var(--dark-gray-color); }
+
+@media (max-width:900px) { .kb-cards { flex-direction:column; } }

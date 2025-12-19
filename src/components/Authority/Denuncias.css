@@ -1,0 +1,36 @@
+.filters-row { display:flex; gap:12px; margin-bottom:16px; }
+.filters-row input { flex:1; padding:10px 12px; border-radius:8px; border:1px solid var(--medium-gray-color); }
+.filters-row select { padding:10px 12px; border-radius:8px; border:1px solid var(--medium-gray-color); }
+.denuncias-table { width:100%; border-collapse: collapse; }
+.denuncias-table th, .denuncias-table td { padding:12px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; }
+.denuncias-table thead th { background: #fafafa; font-weight:700; color:var(--dark-gray-color); }
+.denuncias-table tbody tr td.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', 'Courier New', monospace; }
+.denuncias-table tbody tr:hover { background: var(--light-gray-color); }
+
+/* Stats cards */
+.stats-row { display:flex; gap:18px; margin-bottom:18px; }
+.stat-card { flex:1; background:var(--white-color); padding:18px 20px; border-radius:10px; box-shadow:var(--box-shadow); }
+.stat-label { color:var(--dark-gray-color); font-weight:600; margin-bottom:6px; }
+.stat-value { font-size:24px; font-weight:800; }
+
+/* Map placeholder */
+.map-card { margin-top:20px; }
+.map-placeholder { height:320px; border-radius:10px; background: linear-gradient(180deg,#f6f7f8,#fff); border:1px solid rgba(0,0,0,0.04); display:flex; align-items:center; justify-content:center; color:var(--dark-gray-color); }
+
+@media (max-width:900px) { .filters-row { flex-direction:column; } }
+
+@media (max-width:900px) {
+	.stats-row { flex-direction:column; }
+}
+
+/* Badges for estado */
+.badge { display:inline-block; padding:6px 12px; border-radius:999px; font-weight:700; font-size:13px; box-shadow: none; }
+
+/* Estado: Resuelta (verde) */
+.badge--resuelta { background: #ecfdf5; color: #059669; }
+
+/* Estado: Pendiente (rojo/rosado) */
+.badge--pendiente { background: #fff1f2; color: #dc2626; }
+
+/* Estado: En Progreso (amarillo) */
+.badge--enprogreso { background: #fffbeb; color: #b45309; }

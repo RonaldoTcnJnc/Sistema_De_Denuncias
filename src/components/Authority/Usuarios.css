@@ -1,0 +1,23 @@
+/* Usuarios list styles */
+.users-table { width:100%; border-collapse:collapse; }
+.users-table thead th { text-align:left; padding:14px; color:var(--dark-gray-color); font-weight:700; background:transparent; }
+.users-table tbody td { padding:14px; border-top:1px solid rgba(0,0,0,0.04); vertical-align:middle; }
+.user-cell { display:flex; gap:12px; align-items:center; }
+.user-avatar { width:56px; height:56px; border-radius:50%; background:var(--light-gray-color); display:flex; align-items:center; justify-content:center; font-weight:700; color:var(--text-color); font-size:16px; }
+.user-name { font-weight:700; }
+.user-email { color:var(--dark-gray-color); font-size:0.9rem; }
+.actions-col { text-align:right; }
+
+/* Buttons */
+.btn { padding:8px 12px; border-radius:8px; font-weight:600; cursor:pointer; border:1px solid transparent; }
+.btn-outline { background:transparent; border-color:var(--primary-color); color:var(--primary-color); margin-right:8px; }
+.btn-ghost { background:transparent; color:var(--dark-gray-color); }
+
+/* Badges */
+.badge { display:inline-block; padding:6px 10px; border-radius:999px; font-weight:700; font-size:13px; }
+.badge--active { background:#ecfdf5; color:#059669; }
+.badge--inactive { background:#f8fafc; color:#6b7280; border:1px solid rgba(0,0,0,0.03); }
+
+@media (max-width:900px) {
+  .actions-col { text-align:left; }
+}
