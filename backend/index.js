@@ -16,7 +16,7 @@ app.use((req, res, next) => {
   const allowedOrigins = [
     'http://localhost:5173',
     'http://localhost:5174',
-    process.env.FRONTEND_URL
+    ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : [])
   ].filter(Boolean);
 
   const origin = req.headers.origin;
@@ -220,7 +220,7 @@ app.get('/api/ciudadanos/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query(
-      'SELECT id, nombre_completo, email, telefono, direccion, ciudad, distrito, fecha_registro, verificado FROM ciudadanos WHERE id = $1',
+      'SELECT id, nombre_completo, email, telefono, direccion, ciudad, distrito, fecha_registro, verificado, fotografia_perfil, notificaciones_email, notificaciones_push, boletin_informativo FROM ciudadanos WHERE id = $1',
       [id]
     );
 
@@ -228,35 +228,86 @@ app.get('/api/ciudadanos/:id', async (req, res) => {
       return res.status(404).json({ error: 'Ciudadano no encontrado' });
     }
 
-    res.json(result.rows[0]);
+    const user = result.rows[0];
+
+    // Convertir BYTEA (Buffer) a string (Data URI) si existe
+    if (user.fotografia_perfil) {
+      user.fotografia_perfil = user.fotografia_perfil.toString('utf-8');
+    }
+
+    res.json(user);
   } catch (err) {
     console.error('Error fetching citizen profile:', err);
     res.status(500).json({ error: 'Error al obtener perfil', details: err.message });
   }
 });
 
-// PUT /api/ciudadanos/:id - Actualizar perfil de ciudadano
+// PUT /api/ciudadanos/:id - Actualizar perfil de ciudadano (incluyendo foto)
 app.put('/api/ciudadanos/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre_completo, telefono, direccion, ciudad, distrito } = req.body;
+    const { nombre_completo, telefono, direccion, ciudad, distrito, fotografia_perfil } = req.body;
+
+    let q, params;
+
+    // Si se envía foto, la guardamos (asumiendo que viene como Data URI string)
+    // Convertimos el string a Buffer para guardar en BYTEA
+    if (fotografia_perfil) {
+      const imageBuffer = Buffer.from(fotografia_perfil, 'utf-8');
+      q = `UPDATE ciudadanos
+            SET nombre_completo = $1, telefono = $2, direccion = $3, ciudad = $4, distrito = $5, fotografia_perfil = $6, updated_at = NOW()
+            WHERE id = $7
+            RETURNING id, nombre_completo, email, telefono, direccion, ciudad, distrito, fecha_registro, verificado`;
+      params = [nombre_completo, telefono, direccion, ciudad, distrito, imageBuffer, id];
+    } else {
+      q = `UPDATE ciudadanos
+            SET nombre_completo = $1, telefono = $2, direccion = $3, ciudad = $4, distrito = $5, updated_at = NOW()
+            WHERE id = $6
+            RETURNING id, nombre_completo, email, telefono, direccion, ciudad, distrito, fecha_registro, verificado`;
+      params = [nombre_completo, telefono, direccion, ciudad, distrito, id];
+    }
+
+    const result = await pool.query(q, params);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    // Si guardamos foto, devolvemos el string original para que el front actualice el estado sin recargar
+    // (La consulta RETURNING no devuelve columas BYTEA en formato útil directamente sin proceso, 
+    //  así que simplemente confirmamos los datos)
+    const updatedUser = result.rows[0];
+    if (fotografia_perfil) updatedUser.fotografia_perfil = fotografia_perfil;
+
+    res.json(updatedUser);
+  } catch (err) {
+    console.error('Error updating profile:', err);
+    res.status(500).json({ error: 'Error al actualizar perfil', details: err.message });
+  }
+});
+
+// PUT /api/ciudadanos/:id/preferences - Actualizar preferencias
+app.put('/api/ciudadanos/:id/preferences', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { notificaciones_email, notificaciones_push, boletin_informativo } = req.body;
 
     const result = await pool.query(
       `UPDATE ciudadanos
-       SET nombre_completo = $1, telefono = $2, direccion = $3, ciudad = $4, distrito = $5, updated_at = NOW()
-       WHERE id = $6
-       RETURNING id, nombre_completo, email, telefono, direccion, ciudad, distrito, fecha_registro, verificado`,
-      [nombre_completo, telefono, direccion, ciudad, distrito, id]
+       SET notificaciones_email = $1, notificaciones_push = $2, boletin_informativo = $3, updated_at = NOW()
+       WHERE id = $4
+       RETURNING notificaciones_email, notificaciones_push, boletin_informativo`,
+      [notificaciones_email, notificaciones_push, boletin_informativo, id]
     );
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
-    res.json(result.rows[0]);
+    res.json({ success: true, preferences: result.rows[0] });
   } catch (err) {
-    console.error('Error updating profile:', err);
-    res.status(500).json({ error: 'Error al actualizar perfil', details: err.message });
+    console.error('Error updating preferences:', err);
+    res.status(500).json({ error: 'Error al actualizar preferencias', details: err.message });
   }
 });
 
@@ -289,6 +340,26 @@ app.put('/api/ciudadanos/:id/password', async (req, res) => {
   } catch (err) {
     console.error('Error changing password:', err);
     res.status(500).json({ error: 'Error al cambiar contraseña' });
+  }
+});
+
+// DELETE /api/ciudadanos/:id - Eliminar cuenta
+app.delete('/api/ciudadanos/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // La base de datos está configurada con CASCADE DELETE, así que borrar el ciudadano
+    // borrará automáticamente sus denuncias, notificaciones, etc.
+    const result = await pool.query('DELETE FROM ciudadanos WHERE id = $1 RETURNING id', [id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    res.json({ success: true, message: 'Cuenta eliminada correctamente' });
+  } catch (err) {
+    console.error('Error deleting account:', err);
+    res.status(500).json({ error: 'Error al eliminar cuenta' });
   }
 });
 

@@ -14,6 +14,11 @@ const ProfilePage = () => {
     ciudad: '',
     distrito: ''
   });
+  const [preferences, setPreferences] = useState({
+    notificaciones_email: true,
+    notificaciones_push: false,
+    boletin_informativo: true
+  });
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
@@ -32,13 +37,14 @@ const ProfilePage = () => {
           if (response.ok) {
             const userData = await response.json();
 
-            // Combinar datos locales (como token si lo hubiera) con datos frescos
+            // Combinar datos locales con datos frescos
             const updatedUser = { ...localUser, ...userData };
 
             setUser(updatedUser);
-            // Actualizar localStorage para mantener sesión sincronizada
-            localStorage.setItem('user', JSON.stringify(updatedUser)); // update local storage on app load to keep consistent state.
+            // Actualizar localStorage
+            localStorage.setItem('user', JSON.stringify(updatedUser));
 
+            // Populate form
             setFormData({
               nombre_completo: userData.nombre_completo || '',
               email: userData.email || '',
@@ -47,8 +53,20 @@ const ProfilePage = () => {
               ciudad: userData.ciudad || '',
               distrito: userData.distrito || ''
             });
+
+            // Set profile image if exists
+            if (userData.fotografia_perfil) {
+              setProfileImage(userData.fotografia_perfil);
+            }
+
+            // Set preferences
+            setPreferences({
+              notificaciones_email: userData.notificaciones_email ?? true,
+              notificaciones_push: userData.notificaciones_push ?? false,
+              boletin_informativo: userData.boletin_informativo ?? true
+            });
+
           } else {
-            // Fallback si falla el fetch (ej. sin conexión)
             throw new Error("Failed to fetch");
           }
         } catch (error) {
@@ -79,7 +97,7 @@ const ProfilePage = () => {
     if (!file) return;
 
     const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
-    const maxSize = 5 * 1024 * 1024; // 5 MB
+    const maxSize = 2 * 1024 * 1024; // Limit to 2 MB to respect DB/Backend limits
 
     if (!validTypes.includes(file.type)) {
       alert('Selecciona un archivo PNG, JPG o WebP.');
@@ -87,7 +105,7 @@ const ProfilePage = () => {
     }
 
     if (file.size > maxSize) {
-      alert('El archivo es demasiado grande. Máx 5MB.');
+      alert('El archivo es demasiado grande. Máx 2MB.');
       return;
     }
 
@@ -103,6 +121,11 @@ const ProfilePage = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handlePreferencesChange = (e) => {
+    const { name, checked } = e.target;
+    setPreferences(prev => ({ ...prev, [name]: checked }));
+  };
+
   const handlePasswordChange = (e) => {
     const { name, value } = e.target;
     setPasswordData(prev => ({ ...prev, [name]: value }));
@@ -112,10 +135,13 @@ const ProfilePage = () => {
     e.preventDefault();
 
     try {
+      // Include profileImage in the update. It's a Data URI string.
+      const payload = { ...formData, fotografia_perfil: profileImage };
+
       const response = await fetch(`/api/ciudadanos/${user.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
 
       if (!response.ok) {
@@ -126,20 +152,19 @@ const ProfilePage = () => {
       // Obtener datos actualizados del servidor
       const updatedData = await response.json();
 
-      // Actualizar localStorage con datos del servidor
+      // Guardar imagen en localStorage si se quiere persistencia offline (opcional, cuidado con storage limit)
+      // Por ahora confiamos en el endpoint GET al recargar.
+
       const updatedUser = { ...user, ...updatedData };
+      if (profileImage && !updatedData.fotografia_perfil) {
+        // Si el backend no devolvío la foto insertada por alguna razón, usar la local
+        updatedUser.fotografia_perfil = profileImage;
+      }
+
       localStorage.setItem('user', JSON.stringify(updatedUser));
       setUser(updatedUser);
-      setFormData({
-        nombre_completo: updatedData.nombre_completo || '',
-        email: updatedData.email || '',
-        telefono: updatedData.telefono || '',
-        direccion: updatedData.direccion || '',
-        ciudad: updatedData.ciudad || '',
-        distrito: updatedData.distrito || ''
-      });
 
-      alert('Perfil actualizado correctamente');
+      alert('Perfil e imagen actualizados correctamente');
     } catch (error) {
       console.error('Error:', error);
       alert('Error al actualizar el perfil: ' + error.message);
@@ -179,6 +204,45 @@ const ProfilePage = () => {
     }
   };
 
+  const handleSavePreferences = async () => {
+    try {
+      const response = await fetch(`/api/ciudadanos/${user.id}/preferences`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(preferences)
+      });
+
+      if (!response.ok) throw new Error('Error al guardar preferencias');
+
+      alert('Preferencias guardadas correctamente');
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al guardar preferencias: ' + error.message);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!window.confirm('¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/ciudadanos/${user.id}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) throw new Error('Error al eliminar cuenta');
+
+      alert('Cuenta eliminada correctamente');
+      localStorage.removeItem('user');
+      setUser(null);
+      window.location.href = '/'; // Redirigir al inicio/login
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al eliminar la cuenta: ' + error.message);
+    }
+  };
+
   if (loading) {
     return <div className="profile-page-wrapper"><p>Cargando perfil...</p></div>;
   }
@@ -198,7 +262,7 @@ const ProfilePage = () => {
 
         <div className="profile-header-right">
           <div className="avatar-wrapper">
-            <img src={profileImage} alt="Foto de perfil" className="avatar-img" />
+            <img src={profileImage || profileDefault} alt="Foto de perfil" className="avatar-img" />
             <button className="btn-edit-pic" aria-label="Cambiar foto" onClick={handleEditPicClick}>
               ✏️
             </button>
@@ -321,20 +385,50 @@ const ProfilePage = () => {
         <h3>Preferencias de Notificaciones</h3>
         <div className="preferences-list">
           <label className="pref-item">
-            <input type="checkbox" defaultChecked />
+            <input
+              type="checkbox"
+              name="notificaciones_email"
+              checked={preferences.notificaciones_email}
+              onChange={handlePreferencesChange}
+            />
             <span>Notificaciones por correo electrónico</span>
           </label>
           <label className="pref-item">
-            <input type="checkbox" />
+            <input
+              type="checkbox"
+              name="notificaciones_push"
+              checked={preferences.notificaciones_push}
+              onChange={handlePreferencesChange}
+            />
             <span>Notificaciones push en el navegador</span>
           </label>
           <label className="pref-item">
-            <input type="checkbox" defaultChecked />
+            <input
+              type="checkbox"
+              name="boletin_informativo"
+              checked={preferences.boletin_informativo}
+              onChange={handlePreferencesChange}
+            />
             <span>Recibir boletín informativo</span>
           </label>
         </div>
         <div className="form-actions-row">
-          <button className="btn btn-secondary">Guardar preferencias</button>
+          <button className="btn btn-secondary" onClick={handleSavePreferences}>Guardar preferencias</button>
+        </div>
+      </div>
+
+      {/* Zona de Peligro */}
+      <div className="card danger-zone">
+        <h3>Zona de Peligro</h3>
+        <p>Estas acciones son permanentes y no se pueden deshacer.</p>
+        <div className="danger-actions">
+          <div className="danger-item">
+            <div>
+              <strong>Eliminar mi cuenta</strong>
+              <p className="danger-desc">Se borrarán todas tus denuncias y datos personales.</p>
+            </div>
+            <button className="btn btn-danger" onClick={handleDeleteAccount}>Eliminar cuenta</button>
+          </div>
         </div>
       </div>
     </div>
