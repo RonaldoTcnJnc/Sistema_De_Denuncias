@@ -90,7 +90,7 @@ app.get('/api/db-init', async (req, res) => {
 // Obtener denuncias (Global - Limitado a 100)
 app.get('/api/denuncias', async (req, res) => {
   try {
-    const result = await pool.query('SELECT id, ciudadano_id, titulo, descripcion, categoria, ubicacion, distrito, estado, fecha_reporte FROM denuncias ORDER BY fecha_reporte DESC LIMIT 100');
+    const result = await pool.query('SELECT id, ciudadano_id, titulo, descripcion, categoria, ubicacion, distrito, estado, fecha_reporte, prioridad FROM denuncias ORDER BY fecha_reporte DESC LIMIT 100');
     res.json(result.rows);
   } catch (err) {
     console.error(err);
@@ -98,18 +98,23 @@ app.get('/api/denuncias', async (req, res) => {
   }
 });
 
-// Obtener denuncias de un usuario específico
-app.get('/api/denuncias/usuario/:id', async (req, res) => {
+// Obtener denuncias de un ciudadano específico
+app.get('/api/denuncias/ciudadano/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query(
-      'SELECT id, titulo, descripcion, categoria, ubicacion, distrito, estado, fecha_reporte FROM denuncias WHERE ciudadano_id = $1 ORDER BY fecha_reporte DESC',
+      'SELECT id, ciudadano_id, titulo, descripcion, categoria, ubicacion, distrito, estado, fecha_reporte, prioridad, fecha_resolucion FROM denuncias WHERE ciudadano_id = $1 ORDER BY fecha_reporte DESC',
       [id]
     );
     res.json(result.rows);
   } catch (err) {
+<<<<<<< HEAD
     console.error('Error fetching user reports:', err);
     res.status(500).json({ error: 'Error al obtener denuncias del usuario' });
+=======
+    console.error(err);
+    res.status(500).json({ error: 'Error al obtener denuncias del ciudadano' });
+>>>>>>> d2fb554c95361e7ba8905058eb37d04bccff12ad
   }
 });
 
