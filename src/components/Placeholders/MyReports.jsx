@@ -69,13 +69,12 @@ const MyReports = () => {
 
         const user = JSON.parse(userStr);
 
-        const response = await fetch('/api/denuncias');
+        const response = await fetch(`/api/denuncias/usuario/${user.id}`);
         if (!response.ok) {
           throw new Error('Error al cargar denuncias');
         }
 
-        const allDenuncias = await response.json();
-        const userReports = allDenuncias.filter(d => d.ciudadano_id === user.id);
+        const userReports = await response.json();
 
         setReports(userReports);
         setLoading(false);
