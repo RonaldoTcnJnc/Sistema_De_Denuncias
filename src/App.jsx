@@ -1,23 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import HomePage from './components/HomePage/HomePage';
-import Ayuda from './components/Ayuda/Ayuda'; // <-- añade esto si falta
-import LoginPage from './components/LoginPage/LoginPage';
-import AuthorityLogin from './components/Authority/AuthorityLogin';
-import AuthorityDashboard from './components/Authority/AuthorityDashboard';
-import Denuncias from './components/Authority/Denuncias';
-import Estadisticas from './components/Authority/Estadisticas';
-import Usuarios from './components/Authority/Usuarios';
-import PerfilAuthority from './components/Authority/PerfilAuthority';
-import ConfiguracionAuthority from './components/Authority/ConfiguracionAuthority';
-import AuthorityKnowledge from './components/Authority/AuthorityKnowledge';
-import AuthorityLayout from './components/Authority/AuthorityLayout';
-import CitizenDashboard from './components/CitizenDashboard/CitizenDashboard';
-import ProfilePage from './components/ProfilePage/ProfilePage';
-import DashboardLayout from './components/DashboardLayout/DashboardLayout';
-import NewReport from './components/Placeholders/NewReport';
-import MyReports from './components/Placeholders/MyReports';
-import Register from './components/Placeholders/Register';
+import HomePage from './views/general/HomePage/HomePage';
+import Ayuda from './views/general/Ayuda/Ayuda';
+import LoginPage from './views/auth/LoginPage/LoginPage';
+import AuthorityLogin from './views/auth/AuthorityLogin';
+import AuthorityDashboard from './views/authority/AuthorityDashboard'; // Authority folder moved to views/authority
+import Denuncias from './views/authority/Denuncias';
+import Estadisticas from './views/authority/Estadisticas';
+import Usuarios from './views/authority/Usuarios';
+import PerfilAuthority from './views/authority/PerfilAuthority';
+import ConfiguracionAuthority from './views/authority/ConfiguracionAuthority';
+import AuthorityKnowledge from './views/authority/AuthorityKnowledge';
+import AuthorityLayout from './views/authority/AuthorityLayout';
+import CitizenDashboard from './views/citizen/CitizenDashboard/CitizenDashboard';
+import ProfilePage from './views/citizen/ProfilePage/ProfilePage';
+import DashboardLayout from './components/DashboardLayout/DashboardLayout'; // Kept in components as it is a layout
+import NewReport from './views/citizen/NewReport';
+import MyReports from './views/citizen/MyReports';
+import Register from './views/auth/Register';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token'));

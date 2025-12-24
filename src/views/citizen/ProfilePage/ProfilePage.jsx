@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './ProfilePage.css';
-import profileDefault from '../../assets/MiPerfil.png';
+import profileDefault from '../../../assets/MiPerfil.png';
+import { userService } from '../../../services/userService';
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null);
@@ -33,42 +34,37 @@ const ProfilePage = () => {
         const localUser = JSON.parse(userStr);
         try {
           // Intentar obtener datos frescos del backend
-          const response = await fetch(`/api/ciudadanos/${localUser.id}`);
-          if (response.ok) {
-            const userData = await response.json();
+          const userData = await userService.getProfile(localUser.id);
 
-            // Combinar datos locales con datos frescos
-            const updatedUser = { ...localUser, ...userData };
+          // Combinar datos locales con datos frescos
+          const updatedUser = { ...localUser, ...userData };
 
-            setUser(updatedUser);
-            // Actualizar localStorage
-            localStorage.setItem('user', JSON.stringify(updatedUser));
+          setUser(updatedUser);
+          // Actualizar localStorage
+          localStorage.setItem('user', JSON.stringify(updatedUser));
 
-            // Populate form
-            setFormData({
-              nombre_completo: userData.nombre_completo || '',
-              email: userData.email || '',
-              telefono: userData.telefono || '',
-              direccion: userData.direccion || '',
-              ciudad: userData.ciudad || '',
-              distrito: userData.distrito || ''
-            });
+          // Populate form
+          setFormData({
+            nombre_completo: userData.nombre_completo || '',
+            email: userData.email || '',
+            telefono: userData.telefono || '',
+            direccion: userData.direccion || '',
+            ciudad: userData.ciudad || '',
+            distrito: userData.distrito || ''
+          });
 
-            // Set profile image if exists
-            if (userData.fotografia_perfil) {
-              setProfileImage(userData.fotografia_perfil);
-            }
-
-            // Set preferences
-            setPreferences({
-              notificaciones_email: userData.notificaciones_email ?? true,
-              notificaciones_push: userData.notificaciones_push ?? false,
-              boletin_informativo: userData.boletin_informativo ?? true
-            });
-
-          } else {
-            throw new Error("Failed to fetch");
+          // Set profile image if exists
+          if (userData.fotografia_perfil) {
+            setProfileImage(userData.fotografia_perfil);
           }
+
+          // Set preferences
+          setPreferences({
+            notificaciones_email: userData.notificaciones_email ?? true,
+            notificaciones_push: userData.notificaciones_push ?? false,
+            boletin_informativo: userData.boletin_informativo ?? true
+          });
+
         } catch (error) {
           console.error("Error fetching fresh user data, using local storage:", error);
           setUser(localUser);
@@ -138,19 +134,7 @@ const ProfilePage = () => {
       // Include profileImage in the update. It's a Data URI string.
       const payload = { ...formData, fotografia_perfil: profileImage };
 
-      const response = await fetch(`/api/ciudadanos/${user.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Error al actualizar perfil');
-      }
-
-      // Obtener datos actualizados del servidor
-      const updatedData = await response.json();
+      const updatedData = await userService.updateProfile(user.id, payload);
 
       // Guardar imagen en localStorage si se quiere persistencia offline (opcional, cuidado con storage limit)
       // Por ahora confiamos en el endpoint GET al recargar.
@@ -185,16 +169,7 @@ const ProfilePage = () => {
     }
 
     try {
-      const response = await fetch(`/api/ciudadanos/${user.id}/password`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          currentPassword: passwordData.currentPassword,
-          newPassword: passwordData.newPassword
-        })
-      });
-
-      if (!response.ok) throw new Error('Error al cambiar contraseña');
+      await userService.changePassword(user.id, passwordData.currentPassword, passwordData.newPassword);
 
       alert('Contraseña cambiada correctamente');
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
@@ -206,13 +181,7 @@ const ProfilePage = () => {
 
   const handleSavePreferences = async () => {
     try {
-      const response = await fetch(`/api/ciudadanos/${user.id}/preferences`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(preferences)
-      });
-
-      if (!response.ok) throw new Error('Error al guardar preferencias');
+      await userService.updatePreferences(user.id, preferences); // userService handles response checking
 
       alert('Preferencias guardadas correctamente');
     } catch (error) {
@@ -227,11 +196,7 @@ const ProfilePage = () => {
     }
 
     try {
-      const response = await fetch(`/api/ciudadanos/${user.id}`, {
-        method: 'DELETE'
-      });
-
-      if (!response.ok) throw new Error('Error al eliminar cuenta');
+      await userService.deleteAccount(user.id);
 
       alert('Cuenta eliminada correctamente');
       localStorage.removeItem('user');

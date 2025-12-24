@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { denunciaService } from '../../services/denunciaService';
 import './NewReport.css';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
@@ -90,17 +91,7 @@ const NewReport = () => {
         prioridad: 'Media'
       };
 
-      const response = await fetch('/api/denuncias', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(denunciaData)
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al crear la denuncia');
-      }
-
-      const result = await response.json();
+      const result = await denunciaService.create(denunciaData);
       console.log('Denuncia creada exitosamente:', result);
 
       setSubmitted(true);

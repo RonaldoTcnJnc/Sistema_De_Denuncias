@@ -5,6 +5,8 @@ import './LoginPage.css';
 import { FcGoogle } from 'react-icons/fc';
 import { FaFacebook } from 'react-icons/fa';
 
+import { authService } from '../../../services/authService';
+
 const LoginPage = () => {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
@@ -16,13 +18,7 @@ const LoginPage = () => {
     setError('');
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, type: 'ciudadano' })
-      });
-
-      const data = await response.json();
+      const data = await authService.login(email, password, 'ciudadano');
 
       if (data.success) {
         localStorage.setItem('token', data.token);
@@ -35,7 +31,7 @@ const LoginPage = () => {
       }
     } catch (err) {
       console.error(err);
-      setError('Error de conexión con el servidor');
+      setError(err.message || 'Error de conexión con el servidor');
     }
   };
 

@@ -2,6 +2,8 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AuthorityLogin.css';
 
+import { authService } from '../../services/authService';
+
 const AuthorityLogin = () => {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
@@ -13,13 +15,7 @@ const AuthorityLogin = () => {
     setError('');
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, type: 'autoridad' })
-      });
-
-      const data = await response.json();
+      const data = await authService.login(email, password, 'autoridad');
 
       if (data.success) {
         localStorage.setItem('token', data.token);

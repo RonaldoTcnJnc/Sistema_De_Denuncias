@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import './HomePage.css';
-import DenunciaLogo from '../../assets/DenunciaYa.png';
+import DenunciaLogo from '../../../assets/DenunciaYa.png';
 // Importa íconos (necesitarás instalar react-icons: npm install react-icons)
 import {
   FiAlertCircle,
@@ -59,7 +59,7 @@ const Header = () => {
 // Footer: pie de página. Actualiza enlaces sociales y texto legal según corresponda.
 const Footer = () => (
   <footer className="home-footer">
-      <div className="home-container">
+    <div className="home-container">
       <div className="logo">
       </div>
       <p>© 2024 DenunciaYA. Todos los derechos reservados.</p>
@@ -105,19 +105,19 @@ const HomePage = () => {
           {/* Pasos: modularizar si se necesita usar datos dinámicos */}
           <div className="steps-container">
             <div className="step-card">
-              <div className="step-icon info"><FiAlertCircle size={24}/></div>
+              <div className="step-icon info"><FiAlertCircle size={24} /></div>
               <h3>1. Reporta</h3>
               <p>Crea un reporte con detalles y adjunta fotos. Tu voz es el primer paso para el cambio.</p>
             </div>
 
             <div className="step-card">
-              <div className="step-icon review"><FiSearch size={24}/></div>
+              <div className="step-icon review"><FiSearch size={24} /></div>
               <h3>2. Revisa</h3>
               <p>Sigue el estado de tu reporte y recibe notificaciones. La transparencia es clave.</p>
             </div>
 
             <div className="step-card">
-              <div className="step-icon resolve"><FiCheckCircle size={24}/></div>
+              <div className="step-icon resolve"><FiCheckCircle size={24} /></div>
               <h3>3. Resuelve</h3>
               <p>Celebra cuando el problema se solucione. Juntos, logramos una ciudad mejor.</p>
             </div>

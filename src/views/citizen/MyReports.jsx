@@ -50,6 +50,10 @@ const ReportDetails = ({ report, onClose }) => {
   );
 };
 
+import { denunciaService } from '../../services/denunciaService';
+
+// ... (keep helper functions like statusClass and ReportDetails)
+
 const MyReports = () => {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -69,13 +73,9 @@ const MyReports = () => {
 
         const user = JSON.parse(userStr);
 
-        // Usar endpoint específico para obtener solo las denuncias del ciudadano
-        const response = await fetch(`/api/denuncias/ciudadano/${user.id}`);
-        if (!response.ok) {
-          throw new Error('Error al cargar denuncias');
-        }
+        // Usar servicio para obtener denuncias
+        const userReports = await denunciaService.getByCitizen(user.id);
 
-        const userReports = await response.json();
         setReports(userReports);
         setLoading(false);
       } catch (err) {

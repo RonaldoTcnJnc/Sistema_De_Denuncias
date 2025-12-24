@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { denunciaService } from '../../services/denunciaService';
 import './Denuncias.css';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -50,10 +51,7 @@ const Denuncias = () => {
   useEffect(() => {
     const fetchDenuncias = async () => {
       try {
-        const response = await fetch('/api/denuncias');
-        if (!response.ok) throw new Error('Error al cargar denuncias');
-
-        const data = await response.json();
+        const data = await denunciaService.getAll();
         setDenuncias(data);
         setLoading(false);
       } catch (err) {

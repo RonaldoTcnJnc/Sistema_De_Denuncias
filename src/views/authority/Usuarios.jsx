@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { userService } from '../../services/userService';
 import './Usuarios.css';
 
 const Usuarios = () => {
@@ -8,10 +9,7 @@ const Usuarios = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch('/api/ciudadanos');
-        if (!response.ok) throw new Error('Error al cargar usuarios');
-
-        const data = await response.json();
+        const data = await userService.getCiudadanos();
         setUsers(data);
         setLoading(false);
       } catch (err) {
