@@ -12,12 +12,12 @@ $psqlPath = "C:\Program Files\PostgreSQL\18\bin\psql.exe"
 
 # Verificar que psql existe
 if (-not (Test-Path $psqlPath)) {
-    Write-Host "❌ Error: No se encontró PostgreSQL en $psqlPath" -ForegroundColor Red
+    Write-Host " Error: No se encontró PostgreSQL en $psqlPath" -ForegroundColor Red
     Write-Host "Por favor, actualiza la variable `$psqlPath en este script con la ruta correcta." -ForegroundColor Yellow
     exit 1
 }
 
-Write-Host "✅ PostgreSQL encontrado" -ForegroundColor Green
+Write-Host " PostgreSQL encontrado" -ForegroundColor Green
 
 # Solicitar contraseña
 $password = Read-Host "Ingresa la contraseña de PostgreSQL (usuario: postgres)" -AsSecureString
@@ -34,9 +34,9 @@ Write-Host "Paso 1: Creando base de datos 'sistema_denuncias'..." -ForegroundCol
 $createDbResult = & $psqlPath -U postgres -c "CREATE DATABASE sistema_denuncias;" 2>&1
 
 if ($LASTEXITCODE -eq 0 -or $createDbResult -like "*already exists*") {
-    Write-Host "✅ Base de datos creada o ya existe" -ForegroundColor Green
+    Write-Host " Base de datos creada o ya existe" -ForegroundColor Green
 } else {
-    Write-Host "❌ Error al crear la base de datos:" -ForegroundColor Red
+    Write-Host " Error al crear la base de datos:" -ForegroundColor Red
     Write-Host $createDbResult
     exit 1
 }
@@ -48,9 +48,9 @@ Write-Host "Paso 2: Inicializando schema y datos..." -ForegroundColor Yellow
 $initResult = & $psqlPath -U postgres -d sistema_denuncias -f "database\init.sql" 2>&1
 
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "✅ Schema y datos inicializados correctamente" -ForegroundColor Green
+    Write-Host " Schema y datos inicializados correctamente" -ForegroundColor Green
 } else {
-    Write-Host "❌ Error al inicializar la base de datos:" -ForegroundColor Red
+    Write-Host " Error al inicializar la base de datos:" -ForegroundColor Red
     Write-Host $initResult
     exit 1
 }

@@ -78,4 +78,10 @@ app.use('/api/denuncias', denunciaRoutes);
 app.use('/api/ciudadanos', usuarioRoutes);
 app.use('/api/autoridades', autoridadRoutes);
 
-app.listen(PORT, () => console.log(`Backend escuchando en http://localhost:${PORT}`));
+// app.listen(PORT, () => console.log(`Backend escuchando en http://localhost:${PORT}`));
+
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => console.log(`Backend escuchando en http://localhost:${PORT}`));
+}
+
+export default app;
