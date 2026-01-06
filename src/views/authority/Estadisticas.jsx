@@ -133,26 +133,27 @@ const ChartPie = ({ items = [], size = 260 }) => {
 }
 
 const Estadisticas = () => {
-  const [denuncias, setDenuncias] = useState([]);
+
+  const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filtroCategoria, setFiltroCategoria] = useState('todos');
 
   useEffect(() => {
-    const fetchDenuncias = async () => {
+    const fetchStats = async () => {
       try {
-        const response = await fetch('/api/denuncias');
-        if (!response.ok) throw new Error('Error al cargar denuncias');
+        const response = await fetch('/api/denuncias/estadisticas');
+        if (!response.ok) throw new Error('Error al cargar estadísticas');
 
         const data = await response.json();
-        setDenuncias(data);
+        setStats(data);
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching denuncias:', err);
+        console.error('Error fetching statistics:', err);
         setLoading(false);
       }
     };
 
-    fetchDenuncias();
+    fetchStats();
   }, []);
 
   const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
@@ -166,40 +167,33 @@ const Estadisticas = () => {
     'Otros': '#94a3b8'
   };
 
-  // Calcular resumen desde datos reales
   const datosResumen = useMemo(() => {
-    const total = denuncias.length;
-    const resueltas = denuncias.filter(d => d.estado === 'Resuelta').length;
-    const pendientes = denuncias.filter(d => d.estado === 'Pendiente').length;
-    const enProgreso = denuncias.filter(d => d.estado === 'En Progreso').length;
-    const tasaResolucion = total > 0 ? Math.round((resueltas / total) * 100) : 0;
+    if (!stats) return { totalDenuncias: 0, resueltas: 0, pendientes: 0, enProgreso: 0, tasaResolucion: 0 };
+
+    const total = stats.total || 0;
+    const resueltaCount = parseInt(stats.byStatus.find(s => s.estado === 'Resuelta')?.count || 0);
+    const pendienteCount = parseInt(stats.byStatus.find(s => s.estado === 'Pendiente')?.count || 0);
+    const progresoCount = parseInt(stats.byStatus.find(s => s.estado === 'En Progreso')?.count || 0);
 
     return {
       totalDenuncias: total,
-      resueltas,
-      pendientes,
-      enProgreso,
-      tasaResolucion,
-      tiempoPromedio: 2.5 // Esto requeriría cálculo más complejo con fechas
+      resueltas: resueltaCount,
+      pendientes: pendienteCount,
+      enProgreso: progresoCount,
+      tasaResolucion: total > 0 ? Math.round((resueltaCount / total) * 100) : 0
     };
-  }, [denuncias]);
+  }, [stats]);
 
-  // Denuncias por categoría
   const denunciasPorCategoria = useMemo(() => {
-    const categorias = {};
-    denuncias.forEach(d => {
-      const cat = d.categoria || 'Otros';
-      categorias[cat] = (categorias[cat] || 0) + 1;
-    });
+    if (!stats || !stats.byCategory) return [];
 
-    return Object.entries(categorias).map(([name, value]) => ({
-      name,
-      value,
-      color: categoryColors[name] || '#94a3b8'
+    return stats.byCategory.map(item => ({
+      name: item.categoria || 'Otros',
+      value: parseInt(item.count),
+      color: categoryColors[item.categoria] || '#94a3b8'
     }));
-  }, [denuncias]);
+  }, [stats]);
 
-  // Estado por categoría (para gráfico de pastel)
   const estadoPorCategoria = useMemo(() => {
     return [
       { name: 'Resuelta', value: datosResumen.resueltas, color: '#22c55e' },
@@ -208,25 +202,24 @@ const Estadisticas = () => {
     ].filter(item => item.value > 0);
   }, [datosResumen]);
 
-  // Datos por mes (últimos 12 meses)
   const datosPorMes = useMemo(() => {
+    if (!stats || !stats.byMonth) return Array(12).fill(0);
+
     const monthCounts = Array(12).fill(0);
+    // Note: This matches the month index directly if the DB returns YYYY-MM
+    // To be precise we should parse the 'mes' string (YYYY-MM)
 
-    denuncias.forEach(d => {
-      const date = new Date(d.fecha_reporte);
-      const month = date.getMonth();
-
-      if (filtroCategoria && filtroCategoria !== 'todos') {
-        if (d.categoria === filtroCategoria) {
-          monthCounts[month]++;
+    stats.byMonth.forEach(item => {
+      if (item.mes) {
+        const monthIndex = parseInt(item.mes.split('-')[1]) - 1; // 0-indexed month
+        if (monthIndex >= 0 && monthIndex < 12) {
+          monthCounts[monthIndex] = parseInt(item.count);
         }
-      } else {
-        monthCounts[month]++;
       }
     });
 
     return monthCounts;
-  }, [denuncias, filtroCategoria]);
+  }, [stats]);
 
   const chartColor = (filtroCategoria && filtroCategoria !== 'todos' && categoryColors[filtroCategoria]) ? categoryColors[filtroCategoria] : '#2563eb';
 
@@ -295,6 +288,7 @@ const Estadisticas = () => {
         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
           <select value={filtroCategoria} onChange={(e) => setFiltroCategoria(e.target.value)} className="filter-select">
             <option value="todos">Todas las categorías</option>
+
             <option value="Vialidad">Vialidad</option>
             <option value="Alumbrado Público">Alumbrado Público</option>
             <option value="Basura">Basura</option>

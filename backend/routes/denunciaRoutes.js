@@ -7,11 +7,14 @@ import {
     assignDenuncia,
     trackDenuncia,
     createAnonymousDenuncia,
-    checkDenuncias
+    createAnonymousDenuncia,
+    checkDenuncias,
+    getEstadisticas
 } from '../controllers/denunciaController.js';
 
 const router = express.Router();
 
+router.get('/estadisticas', getEstadisticas);
 router.get('/', getDenuncias);
 router.get('/verificar', checkDenuncias); // New verification endpoint
 router.get('/track/:id', trackDenuncia); // Public tracking endpoint

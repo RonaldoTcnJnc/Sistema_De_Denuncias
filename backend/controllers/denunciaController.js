@@ -168,3 +168,13 @@ export const checkDenuncias = async (req, res) => {
     }
 };
 
+export const getEstadisticas = async (req, res) => {
+    try {
+        const stats = await Denuncia.getEstadisticas();
+        res.json(stats);
+    } catch (err) {
+        console.error('Error getting statistics:', err);
+        res.status(500).json({ error: 'Error al obtener estadísticas' });
+    }
+};
+

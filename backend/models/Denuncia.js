@@ -67,5 +67,34 @@ export const Denuncia = {
     checkPlate: async (plate) => {
         const result = await pool.query(`SELECT COUNT(*) FROM denuncias WHERE UPPER(placa_vehiculo) = UPPER($1)`, [plate]);
         return parseInt(result.rows[0].count);
+    },
+
+    getEstadisticas: async () => {
+        // Total count
+        const total = await pool.query('SELECT COUNT(*) FROM denuncias');
+
+        // Status counts
+        const status = await pool.query('SELECT estado, COUNT(*) FROM denuncias GROUP BY estado');
+
+        // Category counts
+        const category = await pool.query('SELECT categoria, COUNT(*) FROM denuncias GROUP BY categoria');
+
+        // Monthly counts (last 12 months) based on fecha_reporte
+        const monthly = await pool.query(`
+            SELECT 
+                to_char(fecha_reporte, 'YYYY-MM') as mes, 
+                COUNT(*) 
+            FROM denuncias 
+            WHERE fecha_reporte >= NOW() - INTERVAL '1 year' 
+            GROUP BY mes 
+            ORDER BY mes
+        `);
+
+        return {
+            total: parseInt(total.rows[0].count),
+            byStatus: status.rows,
+            byCategory: category.rows,
+            byMonth: monthly.rows
+        };
     }
 };
