@@ -41,6 +41,7 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: '50mb' }));
 
 app.get('/api/health', (req, res) => res.json({ ok: true, time: new Date() }));
+app.get('/', (req, res) => res.send('API Backend is running!'));
 
 // --- SETUP DATABASE ENDPOINT (KEPT FOR DEV) ---
 const __filename = fileURLToPath(import.meta.url);
