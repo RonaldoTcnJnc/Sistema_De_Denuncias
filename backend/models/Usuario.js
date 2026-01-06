@@ -3,95 +3,73 @@ import pool from '../config/db.js';
 export const Usuario = {
     // Buscar usuario por email en tabla específica (ciudadanos o autoridades)
     findByEmail: async (email, table) => {
-        const result = await pool.query(`SELECT * FROM ${table} WHERE email = $1`, [email]);
+        const result = await pool.query('SELECT * FROM sp_usuario_find_by_email($1, $2)', [email, table]);
         return result.rows[0];
     },
 
     // Buscar usuario por DNI (solo ciudadanos)
     findByDni: async (dni) => {
-        const result = await pool.query('SELECT * FROM ciudadanos WHERE dni = $1', [dni]);
+        const result = await pool.query('SELECT * FROM sp_ciudadano_find_by_dni($1)', [dni]);
         return result.rows[0];
     },
 
     create: async (data) => {
         const { nombre_completo, email, dni, telefono, direccion, ciudad, distrito, password_hash } = data;
         const result = await pool.query(
-            `INSERT INTO ciudadanos (nombre_completo, email, dni, telefono, direccion, ciudad, distrito, password_hash)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-             RETURNING id, nombre_completo, email, dni, telefono`,
+            'SELECT * FROM sp_ciudadano_create($1, $2, $3, $4, $5, $6, $7, $8)',
             [nombre_completo, email, dni, telefono, direccion, ciudad, distrito, password_hash]
         );
         return result.rows[0];
     },
 
     findById: async (id, table = 'ciudadanos') => {
-        // Campos específicos para ciudadano
-        const query = table === 'ciudadanos'
-            ? 'SELECT id, nombre_completo, email, telefono, direccion, ciudad, distrito, fecha_registro, verificado, fotografia_perfil, notificaciones_email, notificaciones_push, boletin_informativo FROM ciudadanos WHERE id = $1'
-            : 'SELECT id, nombre_completo, email, departamento, cargo, rol, distrito_asignado FROM autoridades WHERE id = $1';
-
-        const result = await pool.query(query, [id]);
+        const result = await pool.query('SELECT * FROM sp_usuario_find_by_id($1, $2)', [id, table]);
         return result.rows[0];
     },
 
     update: async (id, data) => {
         const { nombre_completo, telefono, direccion, ciudad, distrito, fotografia_perfil } = data;
-        let q, params;
-
+        let imageBuffer = null;
         if (fotografia_perfil) {
-            const imageBuffer = Buffer.from(fotografia_perfil, 'utf-8');
-            q = `UPDATE ciudadanos
-            SET nombre_completo = $1, telefono = $2, direccion = $3, ciudad = $4, distrito = $5, fotografia_perfil = $6, updated_at = NOW()
-            WHERE id = $7
-            RETURNING id, nombre_completo, email, telefono, direccion, ciudad, distrito, fecha_registro, verificado`;
-            params = [nombre_completo, telefono, direccion, ciudad, distrito, imageBuffer, id];
-        } else {
-            q = `UPDATE ciudadanos
-            SET nombre_completo = $1, telefono = $2, direccion = $3, ciudad = $4, distrito = $5, updated_at = NOW()
-            WHERE id = $6
-            RETURNING id, nombre_completo, email, telefono, direccion, ciudad, distrito, fecha_registro, verificado`;
-            params = [nombre_completo, telefono, direccion, ciudad, distrito, id];
+            imageBuffer = Buffer.from(fotografia_perfil, 'utf-8');
         }
 
-        const result = await pool.query(q, params);
+        const result = await pool.query(
+            'SELECT * FROM sp_ciudadano_update($1, $2, $3, $4, $5, $6, $7)',
+            [id, nombre_completo, telefono, direccion, ciudad, distrito, imageBuffer]
+        );
         return result.rows[0];
     },
 
     updatePreferences: async (id, { notificaciones_email, notificaciones_push, boletin_informativo }) => {
         const result = await pool.query(
-            `UPDATE ciudadanos
-       SET notificaciones_email = $1, notificaciones_push = $2, boletin_informativo = $3, updated_at = NOW()
-       WHERE id = $4
-       RETURNING notificaciones_email, notificaciones_push, boletin_informativo`,
-            [notificaciones_email, notificaciones_push, boletin_informativo, id]
+            'SELECT * FROM sp_ciudadano_update_preferences($1, $2, $3, $4)',
+            [id, notificaciones_email, notificaciones_push, boletin_informativo]
         );
         return result.rows[0];
     },
 
     updatePassword: async (id, newHash, table = 'ciudadanos') => {
-        await pool.query(
-            `UPDATE ${table} SET password_hash = $1, updated_at = NOW() WHERE id = $2`,
-            [newHash, id]
-        );
+        await pool.query('SELECT sp_usuario_update_password($1, $2, $3)', [id, newHash, table]);
     },
 
     getPasswordHash: async (id, table = 'ciudadanos') => {
-        const result = await pool.query(`SELECT password_hash FROM ${table} WHERE id = $1`, [id]);
+        const result = await pool.query('SELECT * FROM sp_usuario_get_password_hash($1, $2)', [id, table]);
         return result.rows[0]?.password_hash;
     },
 
     delete: async (id) => {
-        const result = await pool.query('DELETE FROM ciudadanos WHERE id = $1 RETURNING id', [id]);
+        const result = await pool.query('SELECT * FROM sp_ciudadano_delete($1)', [id]);
         return result.rows[0];
     },
 
     getAll: async (limit = 100) => {
-        const result = await pool.query(`SELECT id, nombre_completo, email, telefono, ciudad, distrito, fecha_registro FROM ciudadanos ORDER BY fecha_registro DESC LIMIT ${limit}`);
+        const result = await pool.query('SELECT * FROM sp_ciudadano_get_all($1)', [limit]);
         return result.rows;
     },
 
     findAllAutoridades: async () => {
-        const result = await pool.query('SELECT id, nombre_completo, email, departamento, cargo, rol, distrito_asignado FROM autoridades ORDER BY nombre_completo');
+        const result = await pool.query('SELECT * FROM sp_autoridad_get_all()');
         return result.rows;
     }
 };
