@@ -7,6 +7,23 @@ export const Usuario = {
         return result.rows[0];
     },
 
+    // Buscar usuario por DNI (solo ciudadanos)
+    findByDni: async (dni) => {
+        const result = await pool.query('SELECT * FROM ciudadanos WHERE dni = $1', [dni]);
+        return result.rows[0];
+    },
+
+    create: async (data) => {
+        const { nombre_completo, email, dni, telefono, direccion, ciudad, distrito, contraseña_hash } = data;
+        const result = await pool.query(
+            `INSERT INTO ciudadanos (nombre_completo, email, dni, telefono, direccion, ciudad, distrito, contraseña_hash)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+             RETURNING id, nombre_completo, email, dni, telefono`,
+            [nombre_completo, email, dni, telefono, direccion, ciudad, distrito, contraseña_hash]
+        );
+        return result.rows[0];
+    },
+
     findById: async (id, table = 'ciudadanos') => {
         // Campos específicos para ciudadano
         const query = table === 'ciudadanos'
@@ -53,14 +70,14 @@ export const Usuario = {
 
     updatePassword: async (id, newHash, table = 'ciudadanos') => {
         await pool.query(
-            `UPDATE ${table} SET password_hash = $1, updated_at = NOW() WHERE id = $2`,
+            `UPDATE ${table} SET contraseña_hash = $1, updated_at = NOW() WHERE id = $2`,
             [newHash, id]
         );
     },
 
     getPasswordHash: async (id, table = 'ciudadanos') => {
-        const result = await pool.query(`SELECT password_hash FROM ${table} WHERE id = $1`, [id]);
-        return result.rows[0]?.password_hash;
+        const result = await pool.query(`SELECT contraseña_hash FROM ${table} WHERE id = $1`, [id]);
+        return result.rows[0]?.contraseña_hash;
     },
 
     delete: async (id) => {
@@ -70,6 +87,11 @@ export const Usuario = {
 
     getAll: async (limit = 100) => {
         const result = await pool.query(`SELECT id, nombre_completo, email, telefono, ciudad, distrito, fecha_registro FROM ciudadanos ORDER BY fecha_registro DESC LIMIT ${limit}`);
+        return result.rows;
+    },
+
+    findAllAutoridades: async () => {
+        const result = await pool.query('SELECT id, nombre_completo, email, departamento, cargo, rol, distrito_asignado FROM autoridades ORDER BY nombre_completo');
         return result.rows;
     }
 };

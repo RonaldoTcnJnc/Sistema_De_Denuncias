@@ -5,21 +5,47 @@
   justify-content: center;
   padding: 60px 20px;
 }
+
 .auth-login-card {
   width: 100%;
   max-width: 420px;
   background: var(--white-color);
   padding: 36px;
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(18,24,40,0.08);
+  box-shadow: 0 10px 30px rgba(18, 24, 40, 0.08);
   text-align: center;
 }
-.auth-login-card h2 { margin-bottom: 18px; }
-.auth-form { display: flex; flex-direction: column; gap: 12px; }
-.auth-form label { display: flex; flex-direction: column; font-weight: 600; color: var(--dark-gray-color); }
-.auth-form input { margin-top: 8px; padding: 12px 14px; border-radius: 8px; border: 1px solid var(--medium-gray-color); }
-.auth-form .btn { margin-top: 8px; }
+
+.auth-login-card h2 {
+  margin-bottom: 18px;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.auth-form label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+  color: var(--dark-gray-color);
+}
+
+.auth-form input {
+  margin-top: 8px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--medium-gray-color);
+}
+
+.auth-form .btn {
+  margin-top: 8px;
+}
 
 @media (max-width: 520px) {
-  .auth-login-card { padding: 24px; }
+  .auth-login-card {
+    padding: 24px;
+  }
 }

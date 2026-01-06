@@ -1,42 +1,45 @@
 import React, { useState } from 'react';
-import Sidebar from '../Sidebar/Sidebar';
+import { useNavigate } from 'react-router-dom';
 import './DashboardLayout.css';
-import { FiBell, FiMenu, FiX } from 'react-icons/fi';
+import { FiBell, FiLogOut } from 'react-icons/fi';
+
+import Sidebar from '../Sidebar/Sidebar'; // Re-imported
 
 const DashboardLayout = ({ children }) => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const navigate = useNavigate();
 
     const toggleSidebar = () => {
         setSidebarOpen(!sidebarOpen);
     };
 
+    const handleLogout = () => {
+        try {
+            localStorage.removeItem('token');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+        } catch (e) { /* ignorar si no es accesible */ }
+        try { sessionStorage.clear(); } catch (e) { }
+        navigate('/');
+    };
+
     return (
         <div className="dashboard-layout-container">
-            {/* Botón hamburguesa para móvil */}
-            <button
-                className="mobile-menu-toggle"
-                onClick={toggleSidebar}
-                aria-label="Toggle menu"
-            >
-                {sidebarOpen ? <FiX /> : <FiMenu />}
-            </button>
-
-            {/* Overlay cuando sidebar está abierto en móvil */}
-            {sidebarOpen && (
-                <div
-                    className="sidebar-overlay"
-                    onClick={toggleSidebar}
-                />
-            )}
-
             <Sidebar isOpen={sidebarOpen} onClose={toggleSidebar} />
-
             <div className="dashboard-main-content">
                 <header className="dashboard-header">
-                    <div>{/* Espacio para breadcrumbs o título */}</div>
+                    {/* Mobile Toggle */}
+                    <div className="mobile-toggle" onClick={toggleSidebar}>
+                        ☰
+                    </div>
+                    <div className="header-left">
+                        {/* Espacio reservado para Logo o Breadcrumbs si fuera necesario */}
+                    </div>
                     <div className="user-section">
-                        <FiBell size={22} className="notification-icon" />
-                        {/* Aquí iría el avatar del usuario */}
+                        <button className="icon-btn" aria-label="Notificaciones">
+                            <FiBell size={22} className="notification-icon" />
+                        </button>
+                        {/* Logout button can stay in header or just be in sidebar. Keeping it clean here. */}
                     </div>
                 </header>
                 <main className="dashboard-page-content">

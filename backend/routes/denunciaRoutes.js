@@ -4,14 +4,20 @@ import {
     getDenunciasByCiudadano,
     createDenuncia,
     updateDenunciaStatus,
-    assignDenuncia
+    assignDenuncia,
+    trackDenuncia,
+    createAnonymousDenuncia,
+    checkDenuncias
 } from '../controllers/denunciaController.js';
 
 const router = express.Router();
 
 router.get('/', getDenuncias);
+router.get('/verificar', checkDenuncias); // New verification endpoint
+router.get('/track/:id', trackDenuncia); // Public tracking endpoint
 router.get('/ciudadano/:id', getDenunciasByCiudadano);
 router.post('/', createDenuncia);
+router.post('/anonimas', createAnonymousDenuncia); // Anonymous report creation
 router.put('/:id', updateDenunciaStatus);
 
 // Moved from /api/asignar to /api/denuncias/asignar for better grouping

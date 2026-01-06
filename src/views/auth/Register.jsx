@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { authService } from '../../services/authService'; // Importar servicio real
 import './Register.css';
 // Importa íconos
 import { FcGoogle } from 'react-icons/fc';
@@ -10,6 +11,7 @@ const Register = () => {
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
+    dni: '', // Nuevo campo DNI
     phone: '',
     address: '',
     password: '',
@@ -19,9 +21,16 @@ const Register = () => {
 
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const [serverError, setServerError] = useState(''); // Estado para errores de servidor
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+
+    // Validación de entrada para DNI (solo números)
+    if (name === 'dni' && value && !/^\d*$/.test(value)) {
+      return;
+    }
+
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
@@ -33,6 +42,26 @@ const Register = () => {
         [name]: ''
       }));
     }
+
+    // Auto-completar nombre si es DNI
+    if (name === 'dni' && value.length === 8) {
+      handleDniLookup(value);
+    }
+  };
+
+  const handleDniLookup = async (dni) => {
+    try {
+      // Mostrar indicador de carga visual si se desea (opcional)
+      const result = await authService.consultarDNI(dni);
+      if (result.success && result.data && result.data.nombre_completo) {
+        setFormData(prev => ({
+          ...prev,
+          fullName: result.data.nombre_completo
+        }));
+      }
+    } catch (error) {
+      console.log("No se pudo autocompletar el nombre");
+    }
   };
 
   const validateForm = () => {
@@ -40,6 +69,12 @@ const Register = () => {
 
     if (!formData.fullName.trim()) {
       newErrors.fullName = 'El nombre completo es requerido';
+    }
+
+    if (!formData.dni.trim()) {
+      newErrors.dni = 'El DNI es requerido';
+    } else if (!/^\d{8}$/.test(formData.dni)) {
+      newErrors.dni = 'El DNI debe tener 8 dígitos';
     }
 
     if (!formData.email.trim()) {
@@ -73,16 +108,21 @@ const Register = () => {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setServerError('');
     const newErrors = validateForm();
 
     if (Object.keys(newErrors).length === 0) {
-      setSubmitted(true);
-      console.log('Registro enviado:', formData);
-      setTimeout(() => {
-        navigate('/iniciar-sesion');
-      }, 2000);
+      try {
+        await authService.register(formData);
+        setSubmitted(true);
+        setTimeout(() => {
+          navigate('/iniciar-sesion');
+        }, 3000);
+      } catch (err) {
+        setServerError(err.message);
+      }
     } else {
       setErrors(newErrors);
     }
@@ -94,7 +134,8 @@ const Register = () => {
         <div className="register-form-box">
           <div className="success-message">
             <h2>✓ Cuenta creada exitosamente</h2>
-            <p>Tu cuenta ha sido registrada. Redirigiendo a inicio de sesión...</p>
+            <p>Tu cuenta ha sido registrada correctamente con tu DNI.</p>
+            <p>Redirigiendo a inicio de sesión...</p>
           </div>
         </div>
       </div>
@@ -104,8 +145,14 @@ const Register = () => {
   return (
     <div className="register-page-container">
       <div className="register-form-box">
+        <Link to="/" className="back-link-auth">
+          ← Volver al Inicio
+        </Link>
         <h2>Crear cuenta</h2>
         <p>Únete a nuestra plataforma de denuncias ciudadanas.</p>
+
+        {serverError && <div className="error-message server-error">{serverError}</div>}
+
         <form onSubmit={handleSubmit}>
           <div className="form-row">
             <div className="input-group">
@@ -122,6 +169,35 @@ const Register = () => {
             </div>
           </div>
 
+          <div className="form-row">
+            <div className="input-group">
+              <label htmlFor="dni">DNI *</label>
+              <input
+                type="text"
+                id="dni"
+                name="dni"
+                placeholder="12345678"
+                maxLength="8"
+                value={formData.dni}
+                onChange={handleChange}
+              />
+              {errors.dni && <span className="error-message">{errors.dni}</span>}
+            </div>
+
+            <div className="input-group">
+              <label htmlFor="phone">Teléfono *</label>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                placeholder="912 345 678"
+                value={formData.phone}
+                onChange={handleChange}
+              />
+              {errors.phone && <span className="error-message">{errors.phone}</span>}
+            </div>
+          </div>
+
           <div className="input-group">
             <label htmlFor="email">Correo electrónico *</label>
             <input
@@ -133,21 +209,6 @@ const Register = () => {
               onChange={handleChange}
             />
             {errors.email && <span className="error-message">{errors.email}</span>}
-          </div>
-
-          <div className="form-row">
-            <div className="input-group">
-              <label htmlFor="phone">Teléfono *</label>
-              <input
-                type="tel"
-                id="phone"
-                name="phone"
-                placeholder="+34 612 345 678"
-                value={formData.phone}
-                onChange={handleChange}
-              />
-              {errors.phone && <span className="error-message">{errors.phone}</span>}
-            </div>
           </div>
 
           <div className="input-group">
@@ -212,7 +273,7 @@ const Register = () => {
             <FcGoogle size={22} /> Google
           </button>
           <button type="button" className="btn-social facebook">
-            <FaFacebook size={22} color="#1877F2"/> Facebook
+            <FaFacebook size={22} color="#1877F2" /> Facebook
           </button>
         </div>
 

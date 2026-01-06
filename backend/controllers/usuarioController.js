@@ -101,6 +101,29 @@ export const deleteAccount = async (req, res) => {
     }
 };
 
+export const searchByDNI = async (req, res) => {
+    try {
+        const { dni } = req.params;
+        const user = await Usuario.findByDni(dni);
+
+        if (!user) {
+            return res.status(404).json({ error: 'Ciudadano no encontrado' });
+        }
+
+        // Return public info or needed info
+        res.json({
+            id: user.id,
+            nombre_completo: user.nombre_completo,
+            email: user.email,
+            dni: user.dni,
+            verificado: user.verificado
+        });
+    } catch (err) {
+        console.error('Error searching citizen by DNI:', err);
+        res.status(500).json({ error: 'Error al buscar ciudadano' });
+    }
+};
+
 export const getCiudadanos = async (req, res) => {
     try {
         const users = await Usuario.getAll(100);
@@ -113,8 +136,8 @@ export const getCiudadanos = async (req, res) => {
 
 export const getAutoridades = async (req, res) => {
     try {
-        const result = await pool.query('SELECT id, nombre_completo, email, departamento, cargo, rol, distrito_asignado FROM autoridades ORDER BY nombre_completo');
-        res.json(result.rows);
+        const autoridades = await Usuario.findAllAutoridades();
+        res.json(autoridades);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Error al obtener autoridades' });

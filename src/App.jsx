@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import HomePage from './views/general/HomePage/HomePage';
 import Ayuda from './views/general/Ayuda/Ayuda';
+import AnonymousTracking from './views/general/AnonymousTracking/AnonymousTracking';
+import ReportTypeSelection from './views/general/ReportTypeSelection/ReportTypeSelection';
+import AnonymousReport from './views/general/AnonymousReport/AnonymousReport';
+import VerificationPage from './views/general/VerificationPage/VerificationPage';
 import LoginPage from './views/auth/LoginPage/LoginPage';
-import AuthorityLogin from './views/auth/AuthorityLogin';
 import AuthorityDashboard from './views/authority/AuthorityDashboard'; // Authority folder moved to views/authority
 import Denuncias from './views/authority/Denuncias';
 import Estadisticas from './views/authority/Estadisticas';
@@ -39,7 +42,6 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/iniciar-sesion" element={<LoginPage />} />
-        <Route path="/iniciar-sesion-autoridad" element={<AuthorityLogin />} />
 
         {/* Rutas de Autoridad con AuthorityLayout */}
         <Route path="/panel-autoridad" element={
@@ -64,15 +66,6 @@ function App() {
           isAuthenticated ? (
             <AuthorityLayout>
               <Estadisticas />
-            </AuthorityLayout>
-          ) : (
-            <Navigate to="/iniciar-sesion-autoridad" />
-          )
-        } />
-        <Route path="/usuarios" element={
-          isAuthenticated ? (
-            <AuthorityLayout>
-              <Usuarios />
             </AuthorityLayout>
           ) : (
             <Navigate to="/iniciar-sesion-autoridad" />
@@ -160,6 +153,10 @@ function App() {
 
         <Route path="/registro" element={<Register />} />
 
+        <Route path="/reportar-incidencia" element={<ReportTypeSelection />} />
+        <Route path="/denuncia-anonima" element={<AnonymousReport />} />
+        <Route path="/consultar-estado" element={<AnonymousTracking />} />
+        <Route path="/verificar-antecedentes" element={<VerificationPage />} />
         <Route path="/ayuda" element={<Ayuda />} /> {/* <<< agregar esta ruta */}
 
         {/* Redirección por defecto si no encuentra la ruta */}

@@ -1,203 +1,85 @@
 import React, { useState, useEffect } from 'react';
 import './CitizenDashboard.css';
-import { FiCheckCircle, FiClock, FiBell, FiPlus } from 'react-icons/fi';
-import { useNavigate } from 'react-router-dom';
+import { FiPlusCircle, FiList, FiUser, FiBell, FiInfo } from 'react-icons/fi';
 
 export default function CitizenDashboard() {
-  const [reports, setReports] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  const [user, setUser] = useState({ nombre: 'Ciudadano' });
 
   useEffect(() => {
-    const fetchReports = async () => {
-      try {
-        const userStr = localStorage.getItem('user');
-        if (!userStr) {
-          setLoading(false);
-          return;
-        }
-
-        const user = JSON.parse(userStr);
-
-        // Usar endpoint específico para obtener solo las denuncias del ciudadano
-        const response = await fetch(`/api/denuncias/ciudadano/${user.id}`);
-        if (!response.ok) throw new Error('Error al cargar denuncias');
-
-        const userReports = await response.json();
-        setReports(userReports);
-        setLoading(false);
-      } catch (err) {
-        console.error('Error fetching reports:', err);
-        setLoading(false);
+    try {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        setUser(JSON.parse(userStr));
       }
-    };
-
-    fetchReports();
+    } catch (e) {
+      console.error(e);
+    }
   }, []);
-
-  // Calcular totales por estado
-  const totals = reports.reduce(
-    (acc, r) => {
-      const s = r.estado?.toLowerCase() || '';
-      if (s.includes('resuelta')) acc.resolved++;
-      else if (s.includes('en progreso')) acc.inProcess++;
-      else acc.pending++;
-      return acc;
-    },
-    { resolved: 0, inProcess: 0, pending: 0 }
-  );
-
-  // Generar notificaciones desde las denuncias reales
-  const notifications = reports
-    .slice(0, 3) // Mostrar solo las 3 más recientes
-    .map(report => {
-      const timeAgo = getTimeAgo(report.fecha_reporte);
-
-      if (report.estado === 'Resuelta') {
-        return {
-          id: report.id,
-          text: `Tu denuncia "${report.titulo}" ha sido resuelta.`,
-          time: timeAgo,
-          type: 'resolved'
-        };
-      } else if (report.estado === 'En Progreso') {
-        return {
-          id: report.id,
-          text: `La denuncia "${report.titulo}" está ahora en proceso.`,
-          comment: 'Equipo asignado. Se resolverá pronto.',
-          time: timeAgo,
-          type: 'in_process'
-        };
-      } else {
-        return {
-          id: report.id,
-          text: `Tu denuncia "${report.titulo}" está pendiente.`,
-          time: timeAgo,
-          type: 'pending'
-        };
-      }
-    });
-
-  const unreadCount = notifications.length;
-
-  // Función auxiliar para calcular tiempo transcurrido
-  function getTimeAgo(dateStr) {
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diffMs = now - date;
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 60) return `Hace ${diffMins} minutos`;
-    if (diffHours < 24) return `Hace ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
-    return `Hace ${diffDays} día${diffDays > 1 ? 's' : ''}`;
-  }
-
-  if (loading) {
-    return (
-      <div className="citizen-dashboard-container">
-        <p>Cargando panel...</p>
-      </div>
-    );
-  }
 
   return (
     <div className="citizen-dashboard-container">
-      {/* Header principal */}
-      <div className="dashboard-header">
-        <h1 className="dashboard-title">PANEL DEL CIUDADANO</h1>
-        <p className="dashboard-subtitle">Gestiona tus denuncias, seguimiento y notificaciones</p>
-
-        {/* Estadísticas rápidas */}
-        <div className="dashboard-stats">
-          <div className="stat-card stat-resolved">
-            <FiCheckCircle /> <div className="stat-value">{totals.resolved}</div>
-            <div className="stat-label">Resueltas</div>
-          </div>
-          <div className="stat-card stat-inprocess">
-            <FiClock /> <div className="stat-value">{totals.inProcess}</div>
-            <div className="stat-label">En proceso</div>
-          </div>
-          <div className="stat-card stat-pending">
-            <FiBell /> <div className="stat-value">{totals.pending}</div>
-            <div className="stat-label">Pendientes</div>
-          </div>
+      {/* Header con Bienvenida */}
+      <div className="dashboard-header-modern">
+        <div className="header-content">
+          <h1 className="welcome-title">Hola, <span className="user-name">{user.nombre}</span></h1>
+          <p className="welcome-subtitle">Bienvenido a la Plataforma de Denuncias Ciudadanas.</p>
         </div>
       </div>
 
-      {/* Sección de notificaciones */}
-      <section className="notifications-section card">
-        <h3 className="notifications-title">
-          <span className="title-text">Notificaciones</span>
-          {unreadCount > 0 && <span className="notif-badge" aria-hidden="true">{unreadCount}</span>}
-          <FiBell className="notif-header-icon" />
-        </h3>
+      {/* Guía de Funcionalidades */}
+      <section className="guide-section">
+        <h3>¿Qué puedes hacer aquí?</h3>
+        <div className="guide-grid">
+          <div className="guide-card">
+            <div className="guide-icon-wrapper">
+              <FiPlusCircle />
+            </div>
+            <h4>Nueva Denuncia</h4>
+            <p>Utiliza esta opción en el menú lateral para reportar incidentes, quejas o sugerencias. Podrás adjuntar fotos y ubicación.</p>
+          </div>
 
-        <div className="notifications-list">
-          {notifications.length === 0 ? (
-            <p style={{ color: '#6b7280', padding: '16px' }}>No tienes notificaciones</p>
-          ) : (
-            notifications.map((notif) => (
-              <div key={notif.id} className={`notification-item ${notif.type}`}>
-                <div className="notification-icon">
-                  {notif.type === 'resolved' && <FiCheckCircle />}
-                  {notif.type === 'in_process' && <FiBell />}
-                  {notif.type === 'pending' && <FiClock />}
-                </div>
-                <div className="notification-content">
-                  <p className="notification-text">{notif.text}</p>
-                  {notif.comment && <small className="notification-comment">{notif.comment}</small>}
-                  <span className="notification-time">{notif.time}</span>
-                </div>
-              </div>
-            ))
-          )}
+          <div className="guide-card">
+            <div className="guide-icon-wrapper">
+              <FiList />
+            </div>
+            <h4>Mis Denuncias</h4>
+            <p>Consulta el historial y el estado actual de todos tus reportes enviados. Recibirás actualizaciones cuando una autoridad los revise.</p>
+          </div>
+
+          <div className="guide-card">
+            <div className="guide-icon-wrapper">
+              <FiUser />
+            </div>
+            <h4>Mi Perfil</h4>
+            <p>Revisa y actualiza tu información personal y configuración de cuenta. Mantén tus datos al día para un mejor contacto.</p>
+          </div>
         </div>
       </section>
 
-      {/* Sección de reportes */}
-      <section className="my-reports-section">
-        <h2>Mis denuncias</h2>
-        <div className="reports-grid">
-          {reports.length === 0 ? (
-            <p style={{ color: '#6b7280' }}>No has creado denuncias aún. ¡Crea tu primera denuncia!</p>
-          ) : (
-            reports.map((report) => {
-              const statusClass = (report.estado || 'Pendiente').toLowerCase().replace(' ', '-');
-              return (
-                <div key={report.id} className={`card report-card ${statusClass}`}>
-                  <div className="report-header">
-                    <div className="report-left">
-                      <h4 className="report-title">{report.titulo}</h4>
-                      <p className="report-meta">{report.categoria} · {new Date(report.fecha_reporte).toLocaleDateString('es-PE')}</p>
-                    </div>
-                    <span className={`status-tag ${statusClass}`}>{report.estado}</span>
-                  </div>
-
-                  <p className="report-description">{report.descripcion}</p>
-
-                  {report.estado === 'En Progreso' && (
-                    <div className="report-update">Última actualización: En proceso de atención</div>
-                  )}
-                  {report.estado === 'Resuelta' && (
-                    <div className="report-resolution">Denuncia resuelta por el equipo municipal</div>
-                  )}
-                </div>
-              );
-            })
-          )}
+      {/* Avisos Municipales */}
+      <section className="community-news-section">
+        <div className="section-header-news">
+          <h3><FiBell /> Avisos Importantes</h3>
+        </div>
+        <div className="news-grid">
+          <div className="news-card">
+            <div className="news-date">28 Dic, 2025</div>
+            <h4>Campaña de Reciclaje Electrónico</h4>
+            <p>Este sábado estaremos en la Plaza de Armas recolectando residuos electrónicos, pilas y baterías antiguas.</p>
+          </div>
+          <div className="news-card">
+            <div className="news-date">25 Dic, 2025</div>
+            <h4>Mantenimiento de Áreas Verdes</h4>
+            <p>Se realizarán trabajos de poda y limpieza en el Parque Central durante toda la próxima semana.</p>
+          </div>
+          <div className="news-card">
+            <div className="news-date">22 Dic, 2025</div>
+            <h4>Horario de Atención por Fiestas</h4>
+            <p>Las oficinas municipales atenderán hasta el mediodía los días 24 y 31 de diciembre.</p>
+          </div>
         </div>
       </section>
 
-      {/* Botón flotante para crear nueva denuncia */}
-      <button
-        className="btn-create-new"
-        aria-label="Crear nueva denuncia"
-        onClick={() => navigate('/nueva-denuncia')}
-      >
-        <FiPlus />
-      </button>
     </div>
   );
 }

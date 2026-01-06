@@ -1,77 +1,120 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './AuthorityDashboard.css';
-import { FiLock, FiShield, FiClock, FiChevronRight } from 'react-icons/fi';
+import { FiUsers, FiFileText, FiBarChart2, FiBookOpen, FiAlertCircle, FiCheckCircle, FiClock, FiActivity } from 'react-icons/fi';
+
+import { denunciaService } from '../../services/denunciaService';
 
 const AuthorityDashboard = () => {
+  const navigate = useNavigate();
+  const [stats, setStats] = useState({
+    total: 0,
+    pending: 0,
+    inProcess: 0,
+    resolved: 0,
+    urgent: 0
+  });
+  const [recentActivity, setRecentActivity] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await denunciaService.getAll();
+
+        // Calculate Stats
+        const newStats = {
+          total: data.length,
+          pending: data.filter(d => d.estado === 'Pendiente' || d.estado === 'pendiente').length,
+          inProcess: data.filter(d => d.estado === 'En Proceso' || d.estado === 'En Progreso').length,
+          resolved: data.filter(d => d.estado === 'Resuelta').length,
+          urgent: data.filter(d => d.prioridad === 'Alta' || d.prioridad === 'Crítica').length
+        };
+        setStats(newStats);
+
+        // Get recent activity (last 5)
+        setRecentActivity(data.slice(0, 5));
+      } catch (error) {
+        console.error("Error loading dashboard data:", error);
+      }
+    };
+
+    fetchData();
+    const interval = setInterval(fetchData, 30000); // Live update
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="authority-dashboard-container">
-      <h1>Guía rápida: Denuncia de tránsito</h1>
-      <p className="subtitle">Pasos recomendados y documentación necesaria para presentar una denuncia de tránsito conforme a normas y buenas prácticas en Perú.</p>
-
-      <div className="card steps-card">
-        <h3>Pasos a seguir</h3>
-        <ol className="steps-list">
-          <li className="step">
-            <div className="step-number">1</div>
-            <div className="step-content">
-              <strong>Prioriza la seguridad y asistencia.</strong>
-              <div className="muted">Si hay lesionados o riesgo inminente, solicita ayuda a la Policía Nacional del Perú o servicios de emergencia y resguarda la escena.</div>
-            </div>
-          </li>
-          <li className="step">
-            <div className="step-number">2</div>
-            <div className="step-content">
-              <strong>Recolecta pruebas en el lugar.</strong>
-              <div className="muted">Toma fotografías y videos (placas, daños, señalización, ubicación). Anota fecha, hora, punto exacto y condiciones (clima, iluminación).</div>
-            </div>
-          </li>
-          <li className="step">
-            <div className="step-number">3</div>
-            <div className="step-content">
-              <strong>Identifica a las partes y testigos.</strong>
-              <div className="muted">Anota nombres, números de documento, teléfonos, y testimonios de testigos si los hay.</div>
-            </div>
-          </li>
-          <li className="step">
-            <div className="step-number">4</div>
-            <div className="step-content">
-              <strong>Guarda documentación y comprobantes.</strong>
-              <div className="muted">Reúne licencia de conducir, SOAT, tarjeta de propiedad, y cualquier boleta o certificado médico si corresponde.</div>
-            </div>
-          </li>
-          <li className="step">
-            <div className="step-number">5</div>
-            <div className="step-content">
-              <strong>Presenta la denuncia ante la autoridad competente.</strong>
-              <div className="muted">Dependiendo del caso puede ser la comisaría, la municipalidad (dirección de tránsito) o la Fiscalía en casos con lesiones graves. Verifica la vía de presentación (presencial o en línea) en tu municipalidad.</div>
-            </div>
-          </li>
-          <li className="step">
-            <div className="step-number">6</div>
-            <div className="step-content">
-              <strong>Solicita copia de tu denuncia y seguimiento.</strong>
-              <div className="muted">Pide el número de expediente o constancia y los plazos estimados para la respuesta o resolución.</div>
-            </div>
-          </li>
-        </ol>
-
-        <div className="checklist card">
-          <h4>Documentos y pruebas recomendadas</h4>
-          <ul className="required-list">
-            <li>Fotos y videos del incidente</li>
-            <li>Documento de identidad (DNI/RUC)</li>
-            <li>Licencia de conducir y SOAT (si aplica)</li>
-            <li>Placas y modelo del vehículo involucrado</li>
-            <li>Contactos de testigos</li>
-            <li>Boletas, partes o certificados médicos (si hay lesiones)</li>
-          </ul>
+      {/* Header de Bienvenida */}
+      <div className="auth-welcome-header">
+        <div>
+          <h1>Panel de Control</h1>
+          <p className="auth-subtitle">Resumen operativo y gestión de incidencias municipales.</p>
         </div>
-
-        <div className="note muted">
-          Esta guía resume pasos habituales y buenas prácticas. Para procedimientos y requisitos formales revisa la web de tu municipalidad o consulta con la Policía Nacional / Fiscalía según el caso.
+        <div className="date-badge">
+          {new Date().toLocaleDateString('es-PE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
         </div>
+      </div>
 
+      {/* KPI Cards */}
+      <div className="kpi-grid">
+        <div className="kpi-card urgent">
+          <div className="kpi-icon"><FiAlertCircle /></div>
+          <div className="kpi-content">
+            <h3>{stats.urgent}</h3>
+            <span>Urgentes</span>
+          </div>
+        </div>
+        <div className="kpi-card pending">
+          <div className="kpi-icon"><FiClock /></div>
+          <div className="kpi-content">
+            <h3>{stats.pending}</h3>
+            <span>Pendientes</span>
+          </div>
+        </div>
+        <div className="kpi-card process">
+          <div className="kpi-icon"><FiActivity /></div>
+          <div className="kpi-content">
+            <h3>{stats.inProcess}</h3>
+            <span>En Proceso</span>
+          </div>
+        </div>
+        <div className="kpi-card resolved">
+          <div className="kpi-icon"><FiCheckCircle /></div>
+          <div className="kpi-content">
+            <h3>{stats.resolved}</h3>
+            <span>Resueltas (Mes)</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="dashboard-content-grid">
+        {/* Feed de Actividad Real */}
+        <section className="recent-activity-section">
+          <div className="section-header">
+            <h2>Ingresos Recientes</h2>
+            <button className="btn-link" onClick={() => navigate('/denuncias')}>Ver todo</button>
+          </div>
+          <div className="activity-list">
+            {recentActivity.length > 0 ? (
+              recentActivity.map((item) => (
+                <div key={item.id} className="activity-item-auth">
+                  <div className="activity-time">
+                    {new Date(item.fecha_reporte).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                  <div className="activity-details">
+                    <h4>{item.titulo}</h4>
+                    <span className="badge-cat">{item.categoria}</span>
+                    <span className="sc-author"> - {item.ciudadano_nombre || 'Anónimo'}</span>
+                  </div>
+                  <button className="btn-action-small" onClick={() => navigate('/denuncias')}>Revisar</button>
+                </div>
+              ))
+            ) : (
+              <div className="no-activity">No hay actividad reciente</div>
+            )}
+          </div>
+        </section>
       </div>
     </div>
   );

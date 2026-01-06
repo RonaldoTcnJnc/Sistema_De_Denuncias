@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS ciudadanos (
     id SERIAL PRIMARY KEY,
     nombre_completo VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
+    dni VARCHAR(20) UNIQUE,
     telefono VARCHAR(20),
     direccion TEXT,
     ciudad VARCHAR(100),
@@ -150,11 +151,68 @@ CREATE TABLE IF NOT EXISTS autoridades (
     ultimo_login TIMESTAMP,
     activo BOOLEAN DEFAULT TRUE,
     verificado BOOLEAN DEFAULT FALSE,
-    rol VARCHAR(50) NOT NULL, -- Operador, Supervisor, Analista, TÃ©cnico, Administrador, Alcalde
-    nivel_permiso INTEGER DEFAULT 1, -- 1: Operador bÃ¡sico, 2: Supervisor, 3: Administrador
+    rol VARCHAR(50) NOT NULL, -- Operador, Supervisor, Analista, Técnico, Administrador, Alcalde
+    nivel_permiso INTEGER DEFAULT 1, -- 1: Operador básico, 2: Supervisor, 3: Administrador
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- ============================================================================
+-- TRIGGERS PARA UPDATED_AT
+-- ============================================================================
+
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER update_ciudadanos_modtime
+    BEFORE UPDATE ON ciudadanos
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_denuncias_modtime
+    BEFORE UPDATE ON denuncias
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_autoridades_modtime
+    BEFORE UPDATE ON autoridades
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================================================
+-- PROCEDIMIENTOS ALMACENADOS
+-- ============================================================================
+
+CREATE OR REPLACE PROCEDURE crear_denuncia(
+    p_ciudadano_id INTEGER,
+    p_titulo VARCHAR,
+    p_descripcion TEXT,
+    p_categoria VARCHAR,
+    p_ubicacion VARCHAR,
+    p_latitud DECIMAL,
+    p_longitud DECIMAL,
+    p_distrito VARCHAR,
+    p_fotografia BYTEA
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    INSERT INTO denuncias (
+        ciudadano_id, titulo, descripcion, categoria, ubicacion, 
+        latitud, longitud, distrito, fotografia, 
+        estado, prioridad, created_at, updated_at
+    ) VALUES (
+        p_ciudadano_id, p_titulo, p_descripcion, p_categoria, p_ubicacion, 
+        p_latitud, p_longitud, p_distrito, p_fotografia, 
+        'Pendiente', 'Media', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+    );
+END;
+$$;
 
 -- Tabla de asignaciÃ³n de denuncias a autoridades
 CREATE TABLE IF NOT EXISTS asignacion_denuncia (
@@ -417,13 +475,13 @@ FLUJO DE UNA DENUNCIA:
 -- INSERTAR CIUDADANOS DE EJEMPLO
 -- ============================================================================
 
-INSERT INTO ciudadanos (nombre_completo, email, telefono, direccion, ciudad, distrito, password_hash, fecha_registro, verificado, notificaciones_email, notificaciones_push, boletin_informativo) 
+INSERT INTO ciudadanos (nombre_completo, email, dni, telefono, direccion, ciudad, distrito, password_hash, fecha_registro, verificado, notificaciones_email, notificaciones_push, boletin_informativo) 
 VALUES 
-('Juan PÃ©rez GarcÃ­a', 'juan.perez@example.com', '+51 987 654 321', 'Calle Principal 123', 'Cusco', 'Norte', 'hashed_password_123', NOW() - INTERVAL '6 months', TRUE, TRUE, FALSE, TRUE),
-('MarÃ­a LÃ³pez RodrÃ­guez', 'maria.lopez@example.com', '+51 987 654 322', 'Avenida Central 456', 'Cusco', 'Sur', 'hashed_password_124', NOW() - INTERVAL '4 months', TRUE, TRUE, TRUE, TRUE),
-('Carlos Mendez Torres', 'carlos.mendez@example.com', '+51 987 654 323', 'Calle Secundaria 789', 'Cusco', 'Este', 'hashed_password_125', NOW() - INTERVAL '3 months', TRUE, TRUE, FALSE, FALSE),
-('Ana GarcÃ­a Flores', 'ana.garcia@example.com', '+51 987 654 324', 'Pasaje Alterno 321', 'Cusco', 'Oeste', 'hashed_password_126', NOW() - INTERVAL '2 months', TRUE, FALSE, FALSE, TRUE),
-('Roberto SÃ¡nchez Silva', 'roberto.sanchez@example.com', '+51 987 654 325', 'Avenida del Parque 654', 'Cusco', 'Norte', 'hashed_password_127', NOW() - INTERVAL '1 month', TRUE, TRUE, TRUE, FALSE);
+('Juan Pérez García', 'juan.perez@example.com', '12345678', '+51 987 654 321', 'Calle Principal 123', 'Cusco', 'Norte', 'hashed_password_123', NOW() - INTERVAL '6 months', TRUE, TRUE, FALSE, TRUE),
+('María López Rodríguez', 'maria.lopez@example.com', '87654321', '+51 987 654 322', 'Avenida Central 456', 'Cusco', 'Sur', 'hashed_password_124', NOW() - INTERVAL '4 months', TRUE, TRUE, TRUE, TRUE),
+('Carlos Mendez Torres', 'carlos.mendez@example.com', '11223344', '+51 987 654 323', 'Calle Secundaria 789', 'Cusco', 'Este', 'hashed_password_125', NOW() - INTERVAL '3 months', TRUE, TRUE, FALSE, FALSE),
+('Ana García Flores', 'ana.garcia@example.com', '44332211', '+51 987 654 324', 'Pasaje Alterno 321', 'Cusco', 'Oeste', 'hashed_password_126', NOW() - INTERVAL '2 months', TRUE, FALSE, FALSE, TRUE),
+('Roberto Sánchez Silva', 'roberto.sanchez@example.com', '55667788', '+51 987 654 325', 'Avenida del Parque 654', 'Cusco', 'Norte', 'hashed_password_127', NOW() - INTERVAL '1 month', TRUE, TRUE, TRUE, FALSE);
 
 -- ============================================================================
 -- INSERTAR AUTORIDADES DE EJEMPLO

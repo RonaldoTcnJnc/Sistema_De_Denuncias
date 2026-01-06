@@ -35,42 +35,45 @@ body {
 
 /* Mobile-first responsive breakpoints */
 @media (max-width: 768px) {
+
   /* Tables scroll horizontally on mobile */
   table {
     display: block;
     overflow-x: auto;
     white-space: nowrap;
   }
-  
+
   /* Stack flex containers on mobile */
   .flex-row {
     flex-direction: column !important;
   }
-  
+
   /* Full width cards on mobile */
-  .card, .kpi-card, .chart-card {
+  .card,
+  .kpi-card,
+  .chart-card {
     width: 100% !important;
     margin-bottom: 16px;
   }
-  
+
   /* Smaller text on mobile */
   h1 {
     font-size: 24px !important;
   }
-  
+
   h2 {
     font-size: 20px !important;
   }
-  
+
   h3 {
     font-size: 18px !important;
   }
-  
+
   /* Hide less important columns on mobile */
   .hide-mobile {
     display: none !important;
   }
-  
+
   /* Adjust padding for mobile */
   .authority-dashboard-container,
   .myreports-page,
@@ -80,13 +83,31 @@ body {
 }
 
 @media (max-width: 480px) {
+
   /* Even smaller adjustments for very small screens */
   body {
     font-size: 14px;
   }
-  
+
   button {
     padding: 8px 12px !important;
     font-size: 14px !important;
   }
+}
+
+/* Global Auth Back Link */
+.back-link-auth {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  color: var(--dark-gray-color);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.back-link-auth:hover {
+  color: var(--primary-color);
+  transform: translateX(-3px);
 }

@@ -5,12 +5,14 @@ import {
     updatePreferences,
     changePassword,
     deleteAccount,
-    getCiudadanos
+    getCiudadanos,
+    searchByDNI
 } from '../controllers/usuarioController.js';
 
 const router = express.Router();
 
 router.get('/', getCiudadanos);
+router.get('/dni/:dni', searchByDNI);
 router.get('/:id', getCiudadanoProfile);
 router.put('/:id', updateCiudadanoProfile);
 router.put('/:id/preferences', updatePreferences);

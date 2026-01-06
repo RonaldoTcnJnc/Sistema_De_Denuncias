@@ -11,8 +11,8 @@ const AuthoritySidebar = () => {
     try {
       localStorage.removeItem('token');
       localStorage.removeItem('authToken');
-    } catch (e) {}
-    try { sessionStorage.clear(); } catch (e) {}
+    } catch (e) { }
+    try { sessionStorage.clear(); } catch (e) { }
     navigate('/');
   };
 
@@ -28,17 +28,16 @@ const AuthoritySidebar = () => {
         </div>
       </div>
       <nav className="auth-nav">
-        <NavLink to="/panel-autoridad" className={({isActive}) => 'sidebar-link' + (isActive ? ' active' : '')}><span className="sidebar-icon"><FiHome/></span> Inicio</NavLink>
-        <NavLink to="/denuncias" className={({isActive}) => 'sidebar-link' + (isActive ? ' active' : '')}><span className="sidebar-icon"><FiFileText/></span> Denuncias</NavLink>
-        <NavLink to="/estadisticas" className={({isActive}) => 'sidebar-link' + (isActive ? ' active' : '')}><span className="sidebar-icon"><FiBarChart2/></span> Estadísticas</NavLink>
-        <NavLink to="/usuarios" className={({isActive}) => 'sidebar-link' + (isActive ? ' active' : '')}><span className="sidebar-icon"><FiUsers/></span> Usuarios</NavLink>
-        <NavLink to="/perfil-autoridad" className={({isActive}) => 'sidebar-link' + (isActive ? ' active' : '')}><span className="sidebar-icon"><FiUser/></span> Perfil</NavLink>
-        <NavLink to="/configuracion-autoridad" className={({isActive}) => 'sidebar-link' + (isActive ? ' active' : '')}><span className="sidebar-icon"><FiSettings/></span> Configuración</NavLink>
+        <NavLink to="/panel-autoridad" className={({ isActive }) => 'sidebar-link' + (isActive ? ' active' : '')}><span className="sidebar-icon"><FiHome /></span> Inicio</NavLink>
+        <NavLink to="/denuncias" className={({ isActive }) => 'sidebar-link' + (isActive ? ' active' : '')}><span className="sidebar-icon"><FiFileText /></span> Denuncias</NavLink>
+        <NavLink to="/estadisticas" className={({ isActive }) => 'sidebar-link' + (isActive ? ' active' : '')}><span className="sidebar-icon"><FiBarChart2 /></span> Estadísticas</NavLink>
+        <NavLink to="/perfil-autoridad" className={({ isActive }) => 'sidebar-link' + (isActive ? ' active' : '')}><span className="sidebar-icon"><FiUser /></span> Perfil</NavLink>
+        <NavLink to="/configuracion-autoridad" className={({ isActive }) => 'sidebar-link' + (isActive ? ' active' : '')}><span className="sidebar-icon"><FiSettings /></span> Configuración</NavLink>
       </nav>
       <div className="auth-footer">
         <button onClick={handleLogout} className="logout-btn">Cerrar sesión</button>
       </div>
-    </aside>
+    </aside >
   );
 };
 

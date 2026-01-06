@@ -18,14 +18,21 @@ const LoginPage = () => {
     setError('');
 
     try {
-      const data = await authService.login(email, password, 'ciudadano');
+      // Remove hardcoded type - let backend determine user type
+      const data = await authService.login(email, password);
 
       if (data.success) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
         // Notificar a App.jsx
         window.dispatchEvent(new Event('auth-change'));
-        navigate('/panel');
+
+        // Redirect based on user type from backend
+        if (data.user.tipo === 'autoridad') {
+          navigate('/panel-autoridad');
+        } else {
+          navigate('/panel');
+        }
       } else {
         setError(data.error || 'Error al iniciar sesión');
       }
@@ -38,8 +45,11 @@ const LoginPage = () => {
   return (
     <div className="login-page-container">
       <div className="login-form-box">
+        <Link to="/" className="back-link-auth">
+          ← Volver al Inicio
+        </Link>
         <h2>Bienvenido de vuelta</h2>
-        <p>Inicia sesión para continuar en la plataforma.</p>
+        <p>Inicia sesión para acceder a tu cuenta.</p>
 
         {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
 

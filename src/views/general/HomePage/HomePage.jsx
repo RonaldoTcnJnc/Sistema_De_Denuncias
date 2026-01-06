@@ -33,10 +33,6 @@ const Header = () => {
         <div className="header-right">
           {/* Navegación principal: añade/elimina enlaces según necesidades */}
           <nav className="nav-right">
-            <Link to="/" className={`nav-link ${isActive('/') ? 'active' : ''}`}>
-              <FiHome size={18} />
-              <span className="link-text">Inicio</span>
-            </Link>
             {/* Ayuda: enlace a la página de ayuda */}
             <Link to="/ayuda" className="nav-link nav-help">
               <FiHelpCircle size={18} />
@@ -44,11 +40,9 @@ const Header = () => {
             </Link>
           </nav>
 
-          {/* Botones de acción: iniciar sesión, acceso autoridad, etc.
-              - Cambia rutas o estilos según tu autorización/roles */}
+          {/* Botones de acción: iniciar sesión unificado */}
           <div className="header-buttons">
-            <Link to="/iniciar-sesion-autoridad" className="btn btn-primary">Iniciar Sesión (Autoridad)</Link>
-            <Link to="/iniciar-sesion" className="btn btn-secondary">Iniciar Sesión</Link>
+            <Link to="/iniciar-sesion" className="btn btn-primary">Iniciar Sesión</Link>
           </div>
         </div>
       </div>
@@ -89,8 +83,9 @@ const HomePage = () => {
 
           {/* Botones de acción: optimiza las rutas según UX esperado */}
           <div className="hero-buttons">
-            <Link to="/nueva-denuncia" className="btn btn-success">Reportar Incidencia</Link>
-            <Link to="/mis-denuncias" className="btn btn-outline">Ver Reportes</Link>
+            <Link to="/reportar-incidencia" className="btn btn-success">Reportar Incidencia</Link>
+            <Link to="/consultar-estado" className="btn btn-outline">Ver Reportes</Link>
+            <Link to="/verificar-antecedentes" className="btn btn-verify">Verificar Antecedentes</Link>
           </div>
         </div>
       </main>

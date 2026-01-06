@@ -88,7 +88,9 @@ const NewReport = () => {
         latitud: selectedPos.lat,
         longitud: selectedPos.lng,
         distrito: 'Norte', // Por ahora fijo, se puede mejorar con geocoding
-        prioridad: 'Media'
+        prioridad: 'Media',
+        fotografia: form.photos.length > 0 ? form.photos[0].preview.split(',')[1] : null,
+        placa_vehiculo: form.plate
       };
 
       const result = await denunciaService.create(denunciaData);
@@ -162,6 +164,18 @@ const NewReport = () => {
               value={form.title}
               onChange={handleChange}
               required
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Placa del Vehículo (Opcional)</label>
+            <input
+              type="text"
+              name="plate"
+              placeholder="Ej: ABC-123"
+              value={form.plate || ''}
+              onChange={handleChange}
+              style={{ textTransform: 'uppercase' }}
             />
           </div>
 

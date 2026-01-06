@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import './AuthorityLogin.css';
 
 import { authService } from '../../services/authService';
@@ -35,6 +35,9 @@ const AuthorityLogin = () => {
   return (
     <div className="auth-login-wrapper">
       <div className="auth-login-card">
+        <Link to="/" className="back-link-auth">
+          ← Volver al Inicio
+        </Link>
         <h2>Iniciar sesión - Autoridad</h2>
 
         {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}

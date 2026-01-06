@@ -95,6 +95,42 @@
   text-align: center;
 }
 
+.btn-success {
+  background-color: #10b981;
+  /* Explicit Emerald Green */
+  color: white;
+  padding: 14px 34px;
+  font-size: 1.15rem;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-success:hover {
+  background-color: #059669;
+  /* Darker Green */
+  transform: scale(1.05);
+  color: white;
+}
+
+.btn-outline {
+  background-color: rgba(255, 255, 255, 0.9);
+  /* Semi-transparent white */
+  color: #1f2937;
+  /* Dark text for contrast */
+  border: none;
+  padding: 14px 34px;
+  font-size: 1.15rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-outline:hover {
+  background-color: #ffffff;
+  transform: scale(1.05);
+  color: #111827;
+}
+
 .btn-primary {
   background-color: var(--primary-color);
   color: white;
@@ -142,55 +178,44 @@
 .hero-content {
   position: relative;
   z-index: 1;
-  max-width: 800px;
+  z-index: 1;
+  max-width: 1000px;
   padding: 0 20px;
 }
 
-.hero-content h1 {
-  font-size: 48px;
-  margin-bottom: 1rem;
-  text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
-  white-space: nowrap;
-  display: block;
-  width: 100%;
-  text-align: center;
+.hero-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: nowrap;
+  /* Force single line */
 }
 
-.hero-content p {
-  font-size: 22px;
-  margin-bottom: 2rem;
-  line-height: 1.5;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.35);
-}
+/* ... existing styles ... */
 
-.btn-success {
-  background-color: var(--success-color);
+.btn-verify {
+  background-color: #3b82f6;
   color: white;
-  margin-right: 20px;
   padding: 14px 34px;
   font-size: 1.15rem;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  width: auto !important;
+  /* Force auto width */
+  display: inline-block !important;
+  /* Force inline */
+  margin: 0;
+  /* consistent margin */
 }
 
-.btn-success:hover {
-  background-color: #25a25a;
+.btn-verify:hover {
+  background-color: #2563eb;
   transform: scale(1.03);
-}
-
-.btn-outline {
-  background-color: transparent;
   color: white;
-  border: 3px solid white;
-  padding: 14px 34px;
-  font-size: 1.15rem;
 }
 
-.btn-outline:hover {
-  background-color: white;
-  color: var(--text-color);
-  transform: scale(1.03);
-}
-
-/* Process Section */
 .process-section {
   padding: 80px 0;
   background-color: var(--page-bg, #f6f7fb);
@@ -452,7 +477,8 @@
   }
 
   .btn-success,
-  .btn-outline {
+  .btn-outline,
+  .btn-verify {
     padding: 12px 20px;
     font-size: 14px;
     margin-right: 0;

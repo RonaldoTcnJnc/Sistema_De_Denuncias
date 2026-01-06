@@ -43,5 +43,22 @@ export const denunciaService = {
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Error al asignar denuncia');
         return data;
+    },
+
+    createAnonymous: async (denunciaData) => {
+        const response = await fetch('/api/denuncias/anonimas', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(denunciaData)
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Error al crear denuncia anónima');
+        return data;
+    },
+
+    getByTrackingId: async (trackingId) => {
+        const response = await fetch(`/api/denuncias/track/${trackingId}`);
+        if (!response.ok) throw new Error('Error al obtener denuncia por código de seguimiento');
+        return await response.json();
     }
 };

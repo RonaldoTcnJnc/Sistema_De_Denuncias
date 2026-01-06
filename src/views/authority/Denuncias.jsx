@@ -134,6 +134,58 @@ const Denuncias = () => {
     );
   };
 
+  // Modal Logic
+  const [selectedDenuncia, setSelectedDenuncia] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editForm, setEditForm] = useState({ estado: '', prioridad: '', comentario: '' });
+  const [evidenceFile, setEvidenceFile] = useState(null); // State for evidence file
+
+  const openModal = (denuncia) => {
+    setSelectedDenuncia(denuncia);
+    setEditForm({ estado: denuncia.estado, prioridad: denuncia.prioridad || 'Media', comentario: '' });
+    setEvidenceFile(null); // Reset evidence
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setSelectedDenuncia(null);
+    setIsModalOpen(false);
+  };
+
+  const handleUpdate = async () => {
+    if (!selectedDenuncia) return;
+    try {
+      const updateData = { ...editForm };
+
+      // If Resuelta, process evidence
+      if (editForm.estado === 'Resuelta' && evidenceFile) {
+        const reader = new FileReader();
+        reader.readAsDataURL(evidenceFile);
+        reader.onload = async () => {
+          const base64Evidence = reader.result.split(',')[1];
+          updateData.evidencia = base64Evidence;
+          await sendUpdate(updateData);
+        };
+        return; // Early return to wait for file read
+      }
+
+      await sendUpdate(updateData);
+
+    } catch (error) {
+      console.error("Error updating denuncia:", error);
+      alert("Error al actualizar la denuncia");
+    }
+  };
+
+  const sendUpdate = async (data) => {
+    await denunciaService.updateStatus(selectedDenuncia.id, data);
+    // Update local state
+    setDenuncias(prev => prev.map(d =>
+      d.id === selectedDenuncia.id ? { ...d, ...data } : d
+    ));
+    closeModal();
+  };
+
   return (
     <div className="authority-dashboard-container">
       <div className="stats-row">
@@ -176,6 +228,7 @@ const Denuncias = () => {
               <th>Distrito</th>
               <th>Estado</th>
               <th>Fecha</th>
+              <th>Acciones</th> {/* New Column */}
             </tr>
           </thead>
           <tbody>
@@ -198,14 +251,100 @@ const Denuncias = () => {
                   </span>
                 </td>
                 <td>{new Date(r.fecha_reporte).toLocaleDateString('es-PE')}</td>
+                <td>
+                  <button className="btn-manage" onClick={() => openModal(r)}>Administrar</button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
+      {/* Modal de Administración */}
+      {isModalOpen && selectedDenuncia && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2>Administrar Denuncia #{selectedDenuncia.id}</h2>
+              <button className="close-modal-btn" onClick={closeModal}>×</button>
+            </div>
+            <div className="modal-body">
+              <div className="denuncia-preview">
+                <div className="preview-image">
+                  <img src={selectedDenuncia.fotografia ? `data:image/jpeg;base64,${selectedDenuncia.fotografia}` : "https://via.placeholder.com/400x300?text=Sin+Imagen"} alt="Evidencia" />
+                </div>
+                <div className="preview-details">
+                  <h3>{selectedDenuncia.titulo}</h3>
+                  <p>{selectedDenuncia.descripcion}</p>
+                  <div className="detail-row">
+                    <strong>Categoría:</strong> <span>{selectedDenuncia.categoria}</span>
+                  </div>
+                  <div className="detail-row">
+                    <strong>Ciudadano:</strong> <span>{selectedDenuncia.ciudadano_nombre || 'Anónimo'}</span>
+                  </div>
+                  <div className="detail-row">
+                    <strong>Fecha:</strong> <span>{new Date(selectedDenuncia.fecha_reporte).toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="modal-actions-form">
+                <div className="form-group">
+                  <label>Estado Actual</label>
+                  <select
+                    value={editForm.estado}
+                    onChange={e => setEditForm({ ...editForm, estado: e.target.value })}
+                  >
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="En Proceso">En Proceso</option>
+                    <option value="Resuelta">Resuelta</option>
+                    <option value="Rechazada">Rechazada</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Prioridad</label>
+                  <select
+                    value={editForm.prioridad}
+                    onChange={e => setEditForm({ ...editForm, prioridad: e.target.value })}
+                  >
+                    <option value="Baja">Baja</option>
+                    <option value="Media">Media</option>
+                    <option value="Alta">Alta</option>
+                    <option value="Crítica">Crítica</option>
+                  </select>
+                </div>
+
+                {editForm.estado === 'Resuelta' && (
+                  <div className="form-group">
+                    <label className="required-label">Evidencia de Resolución (Obligatorio)</label>
+                    <input
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={(e) => setEvidenceFile(e.target.files[0])}
+                      className="file-input"
+                    />
+                    <textarea
+                      placeholder="Comentario final..."
+                      value={editForm.comentario}
+                      onChange={e => setEditForm({ ...editForm, comentario: e.target.value })}
+                      className="comentario-input"
+                      style={{ marginTop: '10px', width: '100%', padding: '8px' }}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn-cancel" onClick={closeModal}>Cancelar</button>
+              <button className="btn-save" onClick={handleUpdate}>Guardar Cambios</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="card map-card">
         <h3>Mapa de Denuncias (Cusco)</h3>
+        {/* ... existing map code ... */}
         <p className="muted" style={{ marginBottom: '16px' }}>
           Visualización geográfica de todas las denuncias reportadas en Cusco. Los pines están coloreados según el estado.
         </p>
@@ -226,15 +365,6 @@ const Denuncias = () => {
             <strong style={{ color: '#92400e' }}>● En Progreso</strong>
             <p style={{ fontSize: '12px', color: '#4b5563', marginTop: '4px' }}>Denuncias en proceso</p>
           </div>
-        </div>
-
-        <div style={{ marginTop: '16px', padding: '12px', backgroundColor: '#f5f5f5', borderRadius: '4px', fontSize: '12px' }}>
-          <strong>Información:</strong>
-          <ul style={{ marginTop: '8px', paddingLeft: '20px' }}>
-            <li><strong>Ubicación:</strong> Cusco, Perú (13.5316°S, 71.9877°O)</li>
-            <li><strong>Denuncias mostradas:</strong> {filtered.length}</li>
-            <li><strong>Instrucciones:</strong> Haz clic en cualquier marcador para ver detalles de la denuncia</li>
-          </ul>
         </div>
       </div>
     </div>

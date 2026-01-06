@@ -1,0 +1,246 @@
+.report-type-wrapper {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.report-type-container {
+    max-width: 1000px;
+    width: 100%;
+}
+
+.report-type-header {
+    text-align: center;
+    color: white;
+    margin-bottom: 50px;
+}
+
+.report-type-header .header-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+    opacity: 0.9;
+}
+
+.report-type-header h1 {
+    font-size: 42px;
+    margin: 0 0 15px 0;
+    font-weight: 700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.report-type-header p {
+    font-size: 20px;
+    margin: 0;
+    opacity: 0.95;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.report-type-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.report-type-card {
+    background: white;
+    border-radius: 16px;
+    padding: 40px 30px;
+    text-decoration: none;
+    color: var(--text-color);
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.report-type-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+}
+
+.report-type-card.featured {
+    border: 3px solid var(--primary-color);
+}
+
+.featured-badge {
+    position: absolute;
+    top: -12px;
+    right: 20px;
+    background: var(--primary-color);
+    color: white;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(74, 105, 255, 0.3);
+}
+
+.card-icon {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 25px;
+    transition: transform 0.3s ease;
+}
+
+.report-type-card:hover .card-icon {
+    transform: scale(1.1);
+}
+
+.card-icon.anonymous {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.card-icon.registered {
+    background: linear-gradient(135deg, #4A69FF 0%, #3a58dd 100%);
+    color: white;
+}
+
+.report-type-card h2 {
+    font-size: 26px;
+    margin: 0 0 15px 0;
+    color: var(--text-color);
+    font-weight: 700;
+}
+
+.report-type-card p {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--dark-gray-color);
+    margin: 0 0 25px 0;
+}
+
+.card-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 30px 0;
+    width: 100%;
+    text-align: left;
+}
+
+.card-features li {
+    padding: 8px 0;
+    font-size: 14px;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.card-button {
+    background: var(--primary-color);
+    color: white;
+    padding: 14px 32px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    margin-top: auto;
+}
+
+.report-type-card:hover .card-button {
+    background: #3a58dd;
+    transform: scale(1.05);
+}
+
+.report-type-footer {
+    text-align: center;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 12px 24px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.back-link:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateX(-5px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .report-type-wrapper {
+        padding: 20px 15px;
+    }
+
+    .report-type-header h1 {
+        font-size: 28px;
+    }
+
+    .report-type-header p {
+        font-size: 16px;
+    }
+
+    .report-type-header .header-icon {
+        font-size: 48px;
+    }
+
+    .report-type-cards {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .report-type-card {
+        padding: 30px 20px;
+    }
+
+    .report-type-card h2 {
+        font-size: 22px;
+    }
+
+    .card-icon {
+        width: 80px;
+        height: 80px;
+    }
+
+    .card-icon svg {
+        width: 36px;
+        height: 36px;
+    }
+}
+
+@media (max-width: 480px) {
+    .report-type-header h1 {
+        font-size: 24px;
+    }
+
+    .report-type-header p {
+        font-size: 14px;
+    }
+
+    .report-type-card h2 {
+        font-size: 20px;
+    }
+
+    .report-type-card p {
+        font-size: 14px;
+    }
+
+    .card-features li {
+        font-size: 13px;
+    }
+
+    .card-button {
+        font-size: 14px;
+        padding: 12px 24px;
+    }
+}

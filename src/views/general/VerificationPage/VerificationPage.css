@@ -1,0 +1,157 @@
+/* VerificationPage.css */
+.verification-wrapper {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    padding: 20px;
+}
+
+.verification-container {
+    width: 100%;
+    max-width: 600px;
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+}
+
+.verification-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.verification-header h1 {
+    font-size: 2rem;
+    color: #1e293b;
+    margin-bottom: 10px;
+    font-weight: 800;
+}
+
+.verification-description {
+    color: #64748b;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.search-box-large {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.search-input-large {
+    width: 100%;
+    padding: 18px 24px;
+    padding-left: 50px;
+    font-size: 1.1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.search-input-large:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-icon-large {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 20px;
+}
+
+.btn-verify {
+    width: 100%;
+    padding: 16px;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-verify:hover {
+    background: #2563eb;
+}
+
+.btn-verify:disabled {
+    background: #cbd5e1;
+    cursor: not-allowed;
+}
+
+/* Result Cards */
+.verification-result {
+    margin-top: 30px;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.result-card {
+    padding: 24px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.result-card.positive {
+    background: #fef2f2;
+    border: 1px solid #fee2e2;
+}
+
+.result-card.negative {
+    background: #f0fdf4;
+    border: 1px solid #dcfce7;
+}
+
+.result-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+}
+
+.result-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #0f172a;
+}
+
+.result-message {
+    color: #475569;
+}
+
+.back-link-container {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.back-link {
+    color: #64748b;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.back-link:hover {
+    color: #334155;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
