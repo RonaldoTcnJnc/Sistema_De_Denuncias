@@ -14,12 +14,12 @@ export const Usuario = {
     },
 
     create: async (data) => {
-        const { nombre_completo, email, dni, telefono, direccion, ciudad, distrito, contraseña_hash } = data;
+        const { nombre_completo, email, dni, telefono, direccion, ciudad, distrito, password_hash } = data;
         const result = await pool.query(
             `INSERT INTO ciudadanos (nombre_completo, email, dni, telefono, direccion, ciudad, distrito, password_hash)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
              RETURNING id, nombre_completo, email, dni, telefono`,
-            [nombre_completo, email, dni, telefono, direccion, ciudad, distrito, contraseña_hash]
+            [nombre_completo, email, dni, telefono, direccion, ciudad, distrito, password_hash]
         );
         return result.rows[0];
     },
@@ -70,14 +70,14 @@ export const Usuario = {
 
     updatePassword: async (id, newHash, table = 'ciudadanos') => {
         await pool.query(
-            `UPDATE ${table} SET contraseña_hash = $1, updated_at = NOW() WHERE id = $2`,
+            `UPDATE ${table} SET password_hash = $1, updated_at = NOW() WHERE id = $2`,
             [newHash, id]
         );
     },
 
     getPasswordHash: async (id, table = 'ciudadanos') => {
-        const result = await pool.query(`SELECT contraseña_hash FROM ${table} WHERE id = $1`, [id]);
-        return result.rows[0]?.contraseña_hash;
+        const result = await pool.query(`SELECT password_hash FROM ${table} WHERE id = $1`, [id]);
+        return result.rows[0]?.password_hash;
     },
 
     delete: async (id) => {

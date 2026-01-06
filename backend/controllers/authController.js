@@ -40,7 +40,7 @@ export const login = async (req, res) => {
         }
 
         // Verificar password
-        const validPassword = await bcrypt.compare(password, user.password_hash || user.contraseña_hash || '');
+        const validPassword = await bcrypt.compare(password, user.password_hash || '');
 
         if (!validPassword) {
             return res.status(401).json({ error: 'Contraseña incorrecta' });
@@ -96,7 +96,7 @@ export const register = async (req, res) => {
 
         // Hashear contraseña
         const salt = await bcrypt.genSalt(10);
-        const contraseña_hash = await bcrypt.hash(password, salt);
+        const password_hash = await bcrypt.hash(password, salt);
 
         // Crear usuario
         const newUser = await Usuario.create({
@@ -107,7 +107,7 @@ export const register = async (req, res) => {
             direccion: address,
             ciudad: 'Cusco', // Valor por defecto o agregar al form
             distrito: 'Centro', // Valor por defecto o agregar al form
-            contraseña_hash
+            password_hash
         });
 
         // Generar token para login automático
@@ -142,8 +142,8 @@ export const resetPasswordsDev = async (req, res) => {
         const hash = await bcrypt.hash('123456', salt);
 
         // Using direct pool query or Model if implemented
-        await pool.query('UPDATE ciudadanos SET "contraseña_hash" = $1', [hash]);
-        await pool.query('UPDATE autoridades SET "contraseña_hash" = $1', [hash]);
+        await pool.query('UPDATE ciudadanos SET "password_hash" = $1', [hash]);
+        await pool.query('UPDATE autoridades SET "password_hash" = $1', [hash]);
 
         res.json({ success: true, message: 'Todas las contraseñas actualizadas a "123456"' });
     } catch (err) {
