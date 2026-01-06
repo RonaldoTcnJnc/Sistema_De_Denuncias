@@ -5,7 +5,7 @@
     "rewrites": [
         {
             "source": "/api/(.*)",
-            "destination": "https://sistemadedenuncias-db.onrender.com/api/$1"
+            "destination": "https://sistema-de-denuncias-rho.vercel.app/api/$1"
         },
         {
             "source": "/(.*)",
