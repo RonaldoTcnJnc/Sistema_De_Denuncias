@@ -16,7 +16,7 @@ export const Usuario = {
     create: async (data) => {
         const { nombre_completo, email, dni, telefono, direccion, ciudad, distrito, contraseña_hash } = data;
         const result = await pool.query(
-            `INSERT INTO ciudadanos (nombre_completo, email, dni, telefono, direccion, ciudad, distrito, contraseña_hash)
+            `INSERT INTO ciudadanos (nombre_completo, email, dni, telefono, direccion, ciudad, distrito, password_hash)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
              RETURNING id, nombre_completo, email, dni, telefono`,
             [nombre_completo, email, dni, telefono, direccion, ciudad, distrito, contraseña_hash]
