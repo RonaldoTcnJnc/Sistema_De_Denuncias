@@ -1,13 +1,15 @@
+import { BASE_URL } from '../config/api';
+
 export const userService = {
     getProfile: async (id) => {
-        const response = await fetch(`/api/ciudadanos/${id}`);
+        const response = await fetch(`${BASE_URL}/ciudadanos/${id}`);
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Error al cargar perfil');
         return data;
     },
 
     updateProfile: async (id, profileData) => {
-        const response = await fetch(`/api/ciudadanos/${id}`, {
+        const response = await fetch(`${BASE_URL}/ciudadanos/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(profileData)
@@ -18,7 +20,7 @@ export const userService = {
     },
 
     updatePreferences: async (id, prefs) => {
-        const response = await fetch(`/api/ciudadanos/${id}/preferences`, {
+        const response = await fetch(`${BASE_URL}/ciudadanos/${id}/preferences`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(prefs)
@@ -29,7 +31,7 @@ export const userService = {
     },
 
     changePassword: async (id, currentPassword, newPassword) => {
-        const response = await fetch(`/api/ciudadanos/${id}/password`, {
+        const response = await fetch(`${BASE_URL}/ciudadanos/${id}/password`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ currentPassword, newPassword })
@@ -40,7 +42,7 @@ export const userService = {
     },
 
     deleteAccount: async (id) => {
-        const response = await fetch(`/api/ciudadanos/${id}`, {
+        const response = await fetch(`${BASE_URL}/ciudadanos/${id}`, {
             method: 'DELETE'
         });
         const data = await response.json();
@@ -50,13 +52,13 @@ export const userService = {
 
     // Authority methods
     getCiudadanos: async () => {
-        const response = await fetch('/api/ciudadanos');
+        const response = await fetch(`${BASE_URL}/ciudadanos`);
         if (!response.ok) throw new Error('Error al obtener ciudadanos');
         return await response.json();
     },
 
     getAutoridades: async () => {
-        const response = await fetch('/api/autoridades');
+        const response = await fetch(`${BASE_URL}/autoridades`);
         if (!response.ok) throw new Error('Error al obtener autoridades');
         return await response.json();
     }

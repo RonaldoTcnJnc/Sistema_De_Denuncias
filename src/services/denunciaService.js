@@ -1,18 +1,20 @@
+import { BASE_URL } from '../config/api';
+
 export const denunciaService = {
     getAll: async () => {
-        const response = await fetch('/api/denuncias');
+        const response = await fetch(`${BASE_URL}/denuncias`);
         if (!response.ok) throw new Error('Error al obtener denuncias');
         return await response.json();
     },
 
     getByCitizen: async (id) => {
-        const response = await fetch(`/api/denuncias/ciudadano/${id}`);
+        const response = await fetch(`${BASE_URL}/denuncias/ciudadano/${id}`);
         if (!response.ok) throw new Error('Error al obtener denuncias del usuario');
         return await response.json();
     },
 
     create: async (denunciaData) => {
-        const response = await fetch('/api/denuncias', {
+        const response = await fetch(`${BASE_URL}/denuncias`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(denunciaData)
@@ -23,7 +25,7 @@ export const denunciaService = {
     },
 
     updateStatus: async (id, statusData) => {
-        const response = await fetch(`/api/denuncias/${id}`, {
+        const response = await fetch(`${BASE_URL}/denuncias/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(statusData)
@@ -35,7 +37,7 @@ export const denunciaService = {
 
     assign: async (assignmentData) => {
         // Note: Endpoint changed from /api/asignar to /api/denuncias/asignar
-        const response = await fetch('/api/denuncias/asignar', {
+        const response = await fetch(`${BASE_URL}/denuncias/asignar`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(assignmentData)
@@ -46,7 +48,7 @@ export const denunciaService = {
     },
 
     createAnonymous: async (denunciaData) => {
-        const response = await fetch('/api/denuncias/anonimas', {
+        const response = await fetch(`${BASE_URL}/denuncias/anonimas`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(denunciaData)
@@ -57,7 +59,7 @@ export const denunciaService = {
     },
 
     getByTrackingId: async (trackingId) => {
-        const response = await fetch(`/api/denuncias/track/${trackingId}`);
+        const response = await fetch(`${BASE_URL}/denuncias/track/${trackingId}`);
         if (!response.ok) throw new Error('Error al obtener denuncia por código de seguimiento');
         return await response.json();
     }

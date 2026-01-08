@@ -1528,3 +1528,72 @@ BEGIN
     WHERE d.id = p_id;
 END;
 $$ LANGUAGE plpgsql;
+
+-- ============================================================================
+-- NOTIFICATION STORED PROCEDURES (Appended for Deployment)
+-- ============================================================================
+
+-- 24. sp_notificacion_get_by_citizen
+CREATE OR REPLACE FUNCTION sp_notificacion_get_by_citizen(p_citizen_id INTEGER)
+RETURNS TABLE (
+    id INTEGER,
+    tipo_notificacion VARCHAR,
+    mensaje TEXT,
+    leida BOOLEAN,
+    fecha_notificacion TIMESTAMP,
+    denuncia_id INTEGER
+) AS $$
+BEGIN
+    RETURN QUERY 
+    SELECT n.id, n.tipo_notificacion, n.mensaje, n.leida, n.fecha_notificacion, n.denuncia_id
+    FROM notificaciones_ciudadano n
+    WHERE n.ciudadano_id = p_citizen_id
+    ORDER BY n.fecha_notificacion DESC
+    LIMIT 20;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 25. sp_notificacion_mark_read
+CREATE OR REPLACE FUNCTION sp_notificacion_mark_read(p_id INTEGER)
+RETURNS BOOLEAN AS $$
+BEGIN
+    UPDATE notificaciones_ciudadano
+    SET leida = TRUE, fecha_lectura = CURRENT_TIMESTAMP
+    WHERE id = p_id;
+    RETURN FOUND;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 26. sp_notificacion_mark_all_read
+CREATE OR REPLACE FUNCTION sp_notificacion_mark_all_read(p_citizen_id INTEGER)
+RETURNS BOOLEAN AS $$
+BEGIN
+    UPDATE notificaciones_ciudadano
+    SET leida = TRUE, fecha_lectura = CURRENT_TIMESTAMP
+    WHERE ciudadano_id = p_citizen_id AND leida = FALSE;
+    RETURN TRUE;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 27. Trigger to create notification on Denuncia Status Change
+CREATE OR REPLACE FUNCTION sp_trigger_notify_status_change()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF OLD.estado IS DISTINCT FROM NEW.estado THEN
+        INSERT INTO notificaciones_ciudadano (ciudadano_id, tipo_notificacion, mensaje, denuncia_id)
+        VALUES (
+            NEW.ciudadano_id,
+            'estado_cambio',
+            'El estado de tu denuncia "' || NEW.titulo || '" ha cambiado a ' || NEW.estado || '.',
+            NEW.id
+        );
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_notify_status_change ON denuncias;
+CREATE TRIGGER trg_notify_status_change
+AFTER UPDATE OF estado ON denuncias
+FOR EACH ROW
+EXECUTE FUNCTION sp_trigger_notify_status_change();

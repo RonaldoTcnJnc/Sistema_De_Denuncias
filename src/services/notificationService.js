@@ -1,4 +1,6 @@
-const API_URL = '/api/notificaciones';
+import { BASE_URL } from '../config/api';
+
+const API_URL = `${BASE_URL}/notificaciones`;
 
 export const notificationService = {
     getByCitizen: async (citizenId) => {

@@ -1,10 +1,12 @@
+import { BASE_URL } from '../config/api';
+
 export const authService = {
     login: async (email, password, type = null) => {
         const body = type
             ? { email, password, type }
             : { email, password };
 
-        const response = await fetch('/api/auth/login', {
+        const response = await fetch(`${BASE_URL}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
@@ -15,7 +17,7 @@ export const authService = {
     },
 
     register: async (userData) => {
-        const response = await fetch('/api/auth/register', {
+        const response = await fetch(`${BASE_URL}/auth/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(userData)
@@ -27,7 +29,7 @@ export const authService = {
 
     consultarDNI: async (dni) => {
         try {
-            const response = await fetch('/api/auth/consulta-dni', {
+            const response = await fetch(`${BASE_URL}/auth/consulta-dni`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ dni })
