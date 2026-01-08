@@ -854,31 +854,8 @@ $$ LANGUAGE plpgsql;
 
 -- 4. sp_usuario_find_by_id (Generic or specific?)
 -- Model Usuario.js uses: SELECT * FROM sp_usuario_find_by_id($1, $2)
-CREATE OR REPLACE FUNCTION sp_usuario_find_by_id(p_id INTEGER, p_table VARCHAR)
-RETURNS TABLE (
-    id INTEGER,
-    nombre_completo VARCHAR,
-    email VARCHAR,
-    dni VARCHAR,
-    telefono VARCHAR,
-    direccion TEXT,
-    ciudad VARCHAR,
-    distrito VARCHAR,
-    fotografia_perfil BYTEA,
-    rol VARCHAR
-) AS $$
-BEGIN
-    IF p_table = 'ciudadanos' THEN
-        RETURN QUERY 
-        SELECT c.id, c.nombre_completo, c.email, c.dni, c.telefono, c.direccion, c.ciudad, c.distrito, c.fotografia_perfil, CAST('ciudadano' AS VARCHAR)
-        FROM ciudadanos c WHERE c.id = p_id;
-    ELSE
-        RETURN QUERY 
-        SELECT a.id, a.nombre_completo, a.email, CAST(NULL AS VARCHAR), a.telefono, CAST(NULL AS TEXT), CAST(NULL AS VARCHAR), a.distrito_asignado, a.fotografia_perfil, a.rol
-        FROM autoridades a WHERE a.id = p_id;
-    END IF;
-END;
-$$ LANGUAGE plpgsql;
+-- NOTE: Already defined above at line ~797, skipping duplicate.
+
 
 -- 5. sp_ciudadano_update
 CREATE OR REPLACE FUNCTION sp_ciudadano_update(
