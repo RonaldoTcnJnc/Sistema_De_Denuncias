@@ -793,11 +793,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Function to find user by ID
-CREATE OR REPLACE FUNCTION sp_usuario_find_by_id(
-    p_id INTEGER,
-    p_table VARCHAR
-)
--- Function to find user by ID
 DROP FUNCTION IF EXISTS sp_usuario_find_by_id(INTEGER, VARCHAR);
 CREATE OR REPLACE FUNCTION sp_usuario_find_by_id(
     p_id INTEGER,
