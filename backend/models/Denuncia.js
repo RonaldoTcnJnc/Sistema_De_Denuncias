@@ -46,10 +46,10 @@ export const Denuncia = {
         return result.rows[0];
     },
 
-    addAuthorityUpdate: async ({ denuncia_id, autoridad_id, tipo_actualizacion, descripcion, fotografia_evidencia, visible_para_ciudadano }) => {
+    addAuthorityUpdate: async ({ denuncia_id, autoridad_id, tipo_actualizacion, descripcion, fotografia_evidencia, mime_type, visible_para_ciudadano }) => {
         const result = await pool.query(
-            'SELECT * FROM sp_denuncia_add_authority_update($1, $2, $3, $4, $5, $6)',
-            [denuncia_id, autoridad_id, tipo_actualizacion, descripcion, fotografia_evidencia || null, visible_para_ciudadano || false]
+            'SELECT * FROM sp_denuncia_add_authority_update($1, $2, $3, $4, $5, $6, $7)',
+            [denuncia_id, autoridad_id, tipo_actualizacion, descripcion, fotografia_evidencia || null, visible_para_ciudadano || false, mime_type || 'image/jpeg']
         );
         return result.rows[0];
     },

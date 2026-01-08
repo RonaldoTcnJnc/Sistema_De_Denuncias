@@ -162,9 +162,22 @@ const Denuncias = () => {
         const reader = new FileReader();
         reader.readAsDataURL(evidenceFile);
         reader.onload = async () => {
-          const base64Evidence = reader.result.split(',')[1];
-          updateData.evidencia = base64Evidence;
-          await sendUpdate(updateData);
+          try {
+              console.log("File loaded. processing...");
+              console.log("MIME:", evidenceFile.type);
+              const base64Evidence = reader.result.split(',')[1];
+              updateData.evidencia = base64Evidence;
+              updateData.mime_type = evidenceFile.type || 'application/octet-stream'; // Fallback
+              console.log("Sending update data...");
+              await sendUpdate(updateData);
+          } catch (readerError) {
+              console.error("Error processing file:", readerError);
+              alert("Error al procesar el archivo: " + readerError.message);
+          }
+        };
+        reader.onerror = (err) => {
+            console.error("FileReader error:", err);
+            alert("Error al leer el archivo");
         };
         return; // Early return to wait for file read
       }

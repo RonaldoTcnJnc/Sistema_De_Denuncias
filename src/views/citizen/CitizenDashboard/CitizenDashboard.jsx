@@ -30,7 +30,7 @@ export default function CitizenDashboard() {
       <section className="guide-section">
         <h3>¿Qué puedes hacer aquí?</h3>
         <div className="guide-grid">
-          <div className="guide-card">
+          <div className="guide-card" onClick={() => window.location.href = '/nueva-denuncia'} style={{ cursor: 'pointer' }}>
             <div className="guide-icon-wrapper">
               <FiPlusCircle />
             </div>
@@ -38,7 +38,7 @@ export default function CitizenDashboard() {
             <p>Utiliza esta opción en el menú lateral para reportar incidentes, quejas o sugerencias. Podrás adjuntar fotos y ubicación.</p>
           </div>
 
-          <div className="guide-card">
+          <div className="guide-card" onClick={() => window.location.href = '/mis-denuncias'} style={{ cursor: 'pointer' }}>
             <div className="guide-icon-wrapper">
               <FiList />
             </div>
@@ -46,7 +46,7 @@ export default function CitizenDashboard() {
             <p>Consulta el historial y el estado actual de todos tus reportes enviados. Recibirás actualizaciones cuando una autoridad los revise.</p>
           </div>
 
-          <div className="guide-card">
+          <div className="guide-card" onClick={() => window.location.href = '/perfil'} style={{ cursor: 'pointer' }}>
             <div className="guide-icon-wrapper">
               <FiUser />
             </div>

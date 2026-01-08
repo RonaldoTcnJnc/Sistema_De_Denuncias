@@ -10,6 +10,7 @@ import authRoutes from './routes/authRoutes.js';
 import denunciaRoutes from './routes/denunciaRoutes.js';
 import usuarioRoutes from './routes/usuarioRoutes.js';
 import autoridadRoutes from './routes/autoridadRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
 
 dotenv.config();
 const app = express();
@@ -36,6 +37,11 @@ app.use((req, res, next) => {
     return res.sendStatus(200);
   }
   next();
+});
+
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} [${req.method}] ${req.originalUrl}`);
+    next();
 });
 
 app.use(express.json({ limit: '50mb' }));
@@ -78,5 +84,6 @@ app.use('/api/auth', authRoutes);
 app.use('/api/denuncias', denunciaRoutes);
 app.use('/api/ciudadanos', usuarioRoutes);
 app.use('/api/autoridades', autoridadRoutes);
+app.use('/api/notificaciones', notificationRoutes);
 
 app.listen(PORT, () => console.log(`Backend escuchando en http://localhost:${PORT}`));

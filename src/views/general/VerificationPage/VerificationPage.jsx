@@ -50,7 +50,7 @@ const VerificationPage = () => {
                             className="search-input-large"
                             placeholder="Ingrese Placa del Vehículo (Ej: ABC-123)"
                             value={query}
-                            onChange={(e) => setQuery(e.target.value)}
+                            onChange={(e) => setQuery(e.target.value.toUpperCase())}
                             style={{ textTransform: 'uppercase' }}
                         />
                     </div>

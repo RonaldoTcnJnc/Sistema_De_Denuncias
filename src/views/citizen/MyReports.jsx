@@ -44,6 +44,51 @@ const ReportDetails = ({ report, onClose }) => {
             <label>Ubicación</label>
             <p>{report.ubicacion || report.location}</p>
           </div>
+          
+          {(report.estado === 'Resuelta' || report.status === 'Resuelta') && (
+            <div className="resolution-section" style={{ marginTop: '20px', paddingTop: '15px', borderTop: '1px solid #eee' }}>
+              <div className="detail-group">
+                <label style={{ color: '#22c55e' }}>Resolución de Autoridad</label>
+                <p>{report.resolucion_comentario || 'Sin comentarios adicionales.'}</p>
+              </div>
+              {report.resolucion_evidencia && (
+                <div className="detail-group">
+                  <label>Evidencia Adjunta</label>
+                  <div className="evidence-preview" style={{ marginTop: '10px' }}>
+                     {report.resolucion_mime_type === 'application/pdf' ? (
+                        <div className="pdf-container">
+                            <object
+                                data={`data:application/pdf;base64,${report.resolucion_evidencia}`}
+                                type="application/pdf"
+                                width="100%"
+                                height="400px"
+                                style={{ border: '1px solid #ddd', borderRadius: '8px' }}
+                            >
+                                <p>Tu navegador no puede mostrar este PDF. <a href={`data:application/pdf;base64,${report.resolucion_evidencia}`} download="resolucion.pdf">Descárgalo aquí</a>.</p>
+                            </object>
+                            <div style={{ marginTop: '8px', textAlign: 'right' }}>
+                                <a 
+                                    href={`data:application/pdf;base64,${report.resolucion_evidencia}`} 
+                                    download="resolucion_autoridad.pdf"
+                                    className="download-link"
+                                    style={{ color: '#0ea5e9', textDecoration: 'none', fontWeight: '500' }}
+                                >
+                                    ⬇ Descargar PDF
+                                </a>
+                            </div>
+                        </div>
+                     ) : (
+                         <img 
+                           src={`data:${report.resolucion_mime_type || 'image/jpeg'};base64,${report.resolucion_evidencia}`} 
+                           alt="Evidencia de resolución" 
+                           style={{ maxWidth: '100%', borderRadius: '8px', border: '1px solid #ddd' }}
+                         />
+                     )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

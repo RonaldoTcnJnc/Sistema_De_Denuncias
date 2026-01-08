@@ -23,6 +23,7 @@ const Sidebar = ({ isOpen = false, onClose = () => { } }) => {
             <div className="sidebar-header">
                 Plataforma <br /> Ciudadana
             </div>
+            
             <nav className="sidebar-nav">
                 <NavLink to="/panel" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} onClick={onClose}>
                     <FiGrid /> Panel del Ciudadano

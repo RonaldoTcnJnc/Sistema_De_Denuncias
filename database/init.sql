@@ -59,15 +59,16 @@ CREATE TABLE IF NOT EXISTS ciudadanos (
 -- Tabla de denuncias/reportes ciudadanos
 CREATE TABLE IF NOT EXISTS denuncias (
     id SERIAL PRIMARY KEY,
-    ciudadano_id INTEGER NOT NULL REFERENCES ciudadanos(id) ON DELETE CASCADE,
+    ciudadano_id INTEGER REFERENCES ciudadanos(id) ON DELETE CASCADE,
     titulo VARCHAR(255) NOT NULL,
     descripcion TEXT NOT NULL,
-    categoria VARCHAR(100) NOT NULL, -- Vialidad, Alumbrado PÃºblico, Basura, Grafiti, SeÃ±ales, Otros
+    categoria VARCHAR(100) NOT NULL, -- Vialidad, Alumbrado Público, Basura, Grafiti, Señales, Otros
     ubicacion VARCHAR(255) NOT NULL,
     latitud DECIMAL(10, 8),
     longitud DECIMAL(11, 8),
     distrito VARCHAR(100),
     fotografia BYTEA,
+    placa_vehiculo VARCHAR(20), -- NEW: License plate for vehicle reports
     estado VARCHAR(50) DEFAULT 'Pendiente', -- Pendiente, En Progreso, Resuelta, Rechazada
     fecha_reporte TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     fecha_resolucion TIMESTAMP,
@@ -130,6 +131,19 @@ CREATE TABLE IF NOT EXISTS calificaciones_denuncia (
     calificacion INTEGER CHECK (calificacion >= 1 AND calificacion <= 5),
     comentario TEXT,
     fecha_calificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla de antecedentes vehiculares (Base de datos externa simulada)
+CREATE TABLE IF NOT EXISTS antecedentes_vehiculares (
+    id SERIAL PRIMARY KEY,
+    placa VARCHAR(20) UNIQUE NOT NULL,
+    marca VARCHAR(50),
+    modelo VARCHAR(50),
+    color VARCHAR(30),
+    estado VARCHAR(50), -- Robado, Con Captura, Limpio
+    descripcion TEXT,
+    fecha_reporte TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ============================================================================
@@ -231,10 +245,11 @@ CREATE TABLE IF NOT EXISTS asignacion_denuncia (
 CREATE TABLE IF NOT EXISTS actualizaciones_autoridad (
     id SERIAL PRIMARY KEY,
     denuncia_id INTEGER NOT NULL REFERENCES denuncias(id) ON DELETE CASCADE,
-    autoridad_id INTEGER NOT NULL REFERENCES autoridades(id) ON DELETE SET NULL,
+    autoridad_id INTEGER REFERENCES autoridades(id) ON DELETE SET NULL,
     tipo_actualizacion VARCHAR(100), -- progreso, completacion, rechazo, nota_interna
     descripcion TEXT,
     fotografia_evidencia BYTEA,
+    evidencia_mime_type VARCHAR(100), -- NEW: Support for PDF/PNG/JPG
     visible_para_ciudadano BOOLEAN DEFAULT FALSE,
     fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     visible_publicamente BOOLEAN DEFAULT TRUE
@@ -682,6 +697,16 @@ VALUES
 (5, DATE_TRUNC('month', CURRENT_DATE)::date, 8, 7, 55.2, 4.3, 'Bueno');
 
 -- ============================================================================
+-- INSERTAR ANTECEDENTES VEHICULARES DE EJEMPLO
+-- ============================================================================
+
+INSERT INTO antecedentes_vehiculares (placa, marca, modelo, color, estado, descripcion, fecha_reporte) 
+VALUES 
+('ABC-123', 'Toyota', 'Yaris', 'Gris', 'Robado', 'Vehículo reportado como robado en el distrito Norte', NOW() - INTERVAL '5 days'),
+('XYZ-987', 'Nissan', 'Sentra', 'Negro', 'Con Captura', 'Orden de captura por participación en ilícito', NOW() - INTERVAL '10 days'),
+('MNO-456', 'Kia', 'Rio', 'Rojo', 'Limpio', 'Sin novedades', NOW() - INTERVAL '1 month');
+
+-- ============================================================================
 -- CONFIRMACIÃ“N DE INSERCIONES
 -- ============================================================================
 
@@ -985,9 +1010,42 @@ $$ LANGUAGE plpgsql;
 
 -- 14. sp_denuncia_find_by_id
 CREATE OR REPLACE FUNCTION sp_denuncia_find_by_id(p_id INTEGER)
-RETURNS SETOF denuncias AS $$
+RETURNS TABLE (
+    id INTEGER,
+    ciudadano_id INTEGER,
+    titulo VARCHAR,
+    descripcion TEXT,
+    categoria VARCHAR,
+    ubicacion VARCHAR,
+    latitud DECIMAL,
+    longitud DECIMAL,
+    distrito VARCHAR,
+    fotografia BYTEA,
+    estado VARCHAR,
+    fecha_reporte TIMESTAMP,
+    fecha_resolucion TIMESTAMP,
+    comentarios_ciudadano TEXT,
+    prioridad VARCHAR,
+    visible_publicamente BOOLEAN,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    resolucion_comentario TEXT,
+    resolucion_evidencia BYTEA,
+    resolucion_mime_type VARCHAR
+) AS $$
 BEGIN
-    RETURN QUERY SELECT * FROM denuncias WHERE id = p_id;
+    RETURN QUERY 
+    SELECT 
+        d.id, d.ciudadano_id, d.titulo, d.descripcion, d.categoria, d.ubicacion, 
+        d.latitud, d.longitud, d.distrito, d.fotografia, d.estado, d.fecha_reporte, 
+        d.fecha_resolucion, d.comentarios_ciudadano, d.prioridad, d.visible_publicamente, 
+        d.created_at, d.updated_at,
+        aa.descripcion as resolucion_comentario,
+        aa.fotografia_evidencia as resolucion_evidencia,
+        aa.evidencia_mime_type as resolucion_mime_type
+    FROM denuncias d
+    LEFT JOIN actualizaciones_autoridad aa ON d.id = aa.denuncia_id AND aa.tipo_actualizacion = 'completacion'
+    WHERE d.id = p_id;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -1003,7 +1061,7 @@ CREATE OR REPLACE FUNCTION sp_denuncia_create(
     p_distrito VARCHAR,
     p_prioridad VARCHAR,
     p_fotografia BYTEA,
-    p_placa VARCHAR -- Not in table definition currently? Assuming 'denuncias' table upgrade needed OR ignoring
+    p_placa VARCHAR -- NEW: License plate
 )
 RETURNS SETOF denuncias AS $$
 BEGIN
@@ -1017,11 +1075,11 @@ BEGIN
     RETURN QUERY 
     INSERT INTO denuncias (
         ciudadano_id, titulo, descripcion, categoria, ubicacion, 
-        latitud, longitud, distrito, prioridad, fotografia, 
+        latitud, longitud, distrito, prioridad, fotografia, placa_vehiculo,
         estado, fecha_reporte
     ) VALUES (
         p_ciudadano_id, p_titulo, p_descripcion, p_categoria, p_ubicacion, 
-        p_latitud, p_longitud, p_distrito, p_prioridad, p_fotografia, 
+        p_latitud, p_longitud, p_distrito, p_prioridad, p_fotografia, p_placa,
         'Pendiente', CURRENT_TIMESTAMP
     )
     RETURNING *;
@@ -1086,9 +1144,22 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION sp_denuncia_check_plate(p_plate VARCHAR)
 RETURNS INTEGER AS $$
 BEGIN
-    -- Since column might be missing, returning 0 for now to prevent crash
-    -- Ideally we ALTER TABLE to add 'placa_vehiculo'
-    RETURN 0; 
+    DECLARE
+        v_count INTEGER;
+        v_denuncias_count INTEGER;
+    BEGIN
+        -- Count matches in antecedentes_vehiculares (stolen/captured)
+        SELECT COUNT(*) INTO v_count 
+        FROM antecedentes_vehiculares 
+        WHERE placa = p_plate AND estado IN ('Robado', 'Con Captura');
+        
+        -- Count matches in denuncias (active reports only)
+        SELECT COUNT(*) INTO v_denuncias_count
+        FROM denuncias
+        WHERE placa_vehiculo = p_plate AND estado IN ('Pendiente', 'En Progreso');
+        
+        RETURN v_count + v_denuncias_count;
+    END;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -1126,5 +1197,334 @@ BEGIN
     GROUP BY 1 
     ORDER BY 1 DESC 
     LIMIT 12;
+END;
+$$ LANGUAGE plpgsql;
+
+-- UPDATED sp_denuncia_get_all to include citizen name
+DROP FUNCTION IF EXISTS sp_denuncia_get_all(INTEGER);
+CREATE OR REPLACE FUNCTION sp_denuncia_get_all(p_limit INTEGER)
+RETURNS TABLE (
+    id INTEGER,
+    ciudadano_id INTEGER,
+    titulo VARCHAR,
+    descripcion TEXT,
+    categoria VARCHAR,
+    ubicacion VARCHAR,
+    latitud DECIMAL,
+    longitud DECIMAL,
+    distrito VARCHAR,
+    fotografia BYTEA,
+    estado VARCHAR,
+    fecha_reporte TIMESTAMP,
+    fecha_resolucion TIMESTAMP,
+    comentarios_ciudadano TEXT,
+    prioridad VARCHAR,
+    visible_publicamente BOOLEAN,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    ciudadano_nombre VARCHAR
+) AS $$
+BEGIN
+    RETURN QUERY 
+    SELECT 
+        d.id, d.ciudadano_id, d.titulo, d.descripcion, d.categoria, d.ubicacion, 
+        d.latitud, d.longitud, d.distrito, d.fotografia, d.estado, d.fecha_reporte, 
+        d.fecha_resolucion, d.comentarios_ciudadano, d.prioridad, d.visible_publicamente, 
+        d.created_at, d.updated_at,
+        c.nombre_completo as ciudadano_nombre
+    FROM denuncias d
+    LEFT JOIN ciudadanos c ON d.ciudadano_id = c.id
+    ORDER BY d.fecha_reporte DESC 
+    LIMIT p_limit;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Also update get_by_citizen to conform if needed, but get_all is the dashboard one.
+-- Actually for consistency let's just append this to init.sql and tell user to re-run.
+
+-- UPDATED sp_denuncia_find_by_citizen to include resolution details
+DROP FUNCTION IF EXISTS sp_denuncia_find_by_citizen(INTEGER);
+CREATE OR REPLACE FUNCTION sp_denuncia_find_by_citizen(p_id INTEGER)
+RETURNS TABLE (
+    id INTEGER,
+    ciudadano_id INTEGER,
+    titulo VARCHAR,
+    descripcion TEXT,
+    categoria VARCHAR,
+    ubicacion VARCHAR,
+    latitud DECIMAL,
+    longitud DECIMAL,
+    distrito VARCHAR,
+    fotografia BYTEA,
+    estado VARCHAR,
+    fecha_reporte TIMESTAMP,
+    fecha_resolucion TIMESTAMP,
+    comentarios_ciudadano TEXT,
+    prioridad VARCHAR,
+    visible_publicamente BOOLEAN,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    resolucion_comentario TEXT,
+    resolucion_evidencia BYTEA
+) AS $$
+BEGIN
+    RETURN QUERY 
+    SELECT 
+        d.id, d.ciudadano_id, d.titulo, d.descripcion, d.categoria, d.ubicacion, 
+        d.latitud, d.longitud, d.distrito, d.fotografia, d.estado, d.fecha_reporte, 
+        d.fecha_resolucion, d.comentarios_ciudadano, d.prioridad, d.visible_publicamente, 
+        d.created_at, d.updated_at,
+        aa.descripcion as resolucion_comentario,
+        aa.fotografia_evidencia as resolucion_evidencia
+    FROM denuncias d
+    LEFT JOIN actualizaciones_autoridad aa ON d.id = aa.denuncia_id AND aa.tipo_actualizacion = 'completacion'
+    WHERE d.ciudadano_id = p_id
+    ORDER BY d.fecha_reporte DESC;
+END;
+$$ LANGUAGE plpgsql;
+
+-- UPDATED FUNCTIONS TO INCLUDE RESOLUTION DETAILS FOR BOTH ROLES
+
+-- 1. For Authority Dashboard (sp_denuncia_get_all)
+-- Needs to JOIN updates to see evidence
+DROP FUNCTION IF EXISTS sp_denuncia_get_all(INTEGER);
+CREATE OR REPLACE FUNCTION sp_denuncia_get_all(p_limit INTEGER)
+RETURNS TABLE (
+    id INTEGER,
+    ciudadano_id INTEGER,
+    titulo VARCHAR,
+    descripcion TEXT,
+    categoria VARCHAR,
+    ubicacion VARCHAR,
+    latitud DECIMAL,
+    longitud DECIMAL,
+    distrito VARCHAR,
+    fotografia BYTEA,
+    estado VARCHAR,
+    fecha_reporte TIMESTAMP,
+    fecha_resolucion TIMESTAMP,
+    comentarios_ciudadano TEXT,
+    prioridad VARCHAR,
+    visible_publicamente BOOLEAN,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    ciudadano_nombre VARCHAR,
+    resolucion_comentario TEXT,
+    resolucion_evidencia BYTEA
+) AS $$
+BEGIN
+    RETURN QUERY 
+    SELECT 
+        d.id, d.ciudadano_id, d.titulo, d.descripcion, d.categoria, d.ubicacion, 
+        d.latitud, d.longitud, d.distrito, d.fotografia, d.estado, d.fecha_reporte, 
+        d.fecha_resolucion, d.comentarios_ciudadano, d.prioridad, d.visible_publicamente, 
+        d.created_at, d.updated_at,
+        c.nombre_completo as ciudadano_nombre,
+        aa.descripcion as resolucion_comentario,
+        aa.fotografia_evidencia as resolucion_evidencia
+    FROM denuncias d
+    LEFT JOIN ciudadanos c ON d.ciudadano_id = c.id
+    LEFT JOIN actualizaciones_autoridad aa ON d.id = aa.denuncia_id AND aa.tipo_actualizacion = 'completacion'
+    ORDER BY d.fecha_reporte DESC 
+    LIMIT p_limit;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 2. For Citizen Dashboard (sp_denuncia_find_by_citizen)
+-- Re-defining to match the authority signature improvement if needed, or just ensuring it works.
+-- It was already defined in previous step, but let's reinforce it to be safe and consistent.
+DROP FUNCTION IF EXISTS sp_denuncia_find_by_citizen(INTEGER);
+CREATE OR REPLACE FUNCTION sp_denuncia_find_by_citizen(p_id INTEGER)
+RETURNS TABLE (
+    id INTEGER,
+    ciudadano_id INTEGER,
+    titulo VARCHAR,
+    descripcion TEXT,
+    categoria VARCHAR,
+    ubicacion VARCHAR,
+    latitud DECIMAL,
+    longitud DECIMAL,
+    distrito VARCHAR,
+    fotografia BYTEA,
+    estado VARCHAR,
+    fecha_reporte TIMESTAMP,
+    fecha_resolucion TIMESTAMP,
+    comentarios_ciudadano TEXT,
+    prioridad VARCHAR,
+    visible_publicamente BOOLEAN,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    resolucion_comentario TEXT,
+    resolucion_evidencia BYTEA
+) AS $$
+BEGIN
+    RETURN QUERY 
+    SELECT 
+        d.id, d.ciudadano_id, d.titulo, d.descripcion, d.categoria, d.ubicacion, 
+        d.latitud, d.longitud, d.distrito, d.fotografia, d.estado, d.fecha_reporte, 
+        d.fecha_resolucion, d.comentarios_ciudadano, d.prioridad, d.visible_publicamente, 
+        d.created_at, d.updated_at,
+        aa.descripcion as resolucion_comentario,
+        aa.fotografia_evidencia as resolucion_evidencia
+    FROM denuncias d
+    LEFT JOIN actualizaciones_autoridad aa ON d.id = aa.denuncia_id AND aa.tipo_actualizacion = 'completacion'
+    WHERE d.ciudadano_id = p_id
+    ORDER BY d.fecha_reporte DESC;
+END;
+$$ LANGUAGE plpgsql;
+
+-- UPDATED FUNCTIONS TO SUPPORT MIME TYPES
+
+-- 1. sp_denuncia_add_authority_update (INSERT)
+DROP FUNCTION IF EXISTS sp_denuncia_add_authority_update(INTEGER, INTEGER, VARCHAR, TEXT, BYTEA, BOOLEAN);
+CREATE OR REPLACE FUNCTION sp_denuncia_add_authority_update(
+    p_denuncia_id INTEGER,
+    p_autoridad_id INTEGER,
+    p_tipo VARCHAR,
+    p_descripcion TEXT,
+    p_evidencia BYTEA,
+    p_visible BOOLEAN,
+    p_mime_type VARCHAR DEFAULT 'image/jpeg' -- Default to image/jpeg for backward compatibility
+)
+RETURNS SETOF actualizaciones_autoridad AS $$
+BEGIN
+    RETURN QUERY 
+    INSERT INTO actualizaciones_autoridad (
+        denuncia_id, autoridad_id, tipo_actualizacion, descripcion, 
+        fotografia_evidencia, evidencia_mime_type, visible_para_ciudadano
+    )
+    VALUES (p_denuncia_id, p_autoridad_id, p_tipo, p_descripcion, p_evidencia, p_mime_type, p_visible)
+    RETURNING *;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 2. sp_denuncia_get_all (SELECT for Authority)
+DROP FUNCTION IF EXISTS sp_denuncia_get_all(INTEGER);
+CREATE OR REPLACE FUNCTION sp_denuncia_get_all(p_limit INTEGER)
+RETURNS TABLE (
+    id INTEGER,
+    ciudadano_id INTEGER,
+    titulo VARCHAR,
+    descripcion TEXT,
+    categoria VARCHAR,
+    ubicacion VARCHAR,
+    latitud DECIMAL,
+    longitud DECIMAL,
+    distrito VARCHAR,
+    fotografia BYTEA,
+    estado VARCHAR,
+    fecha_reporte TIMESTAMP,
+    fecha_resolucion TIMESTAMP,
+    comentarios_ciudadano TEXT,
+    prioridad VARCHAR,
+    visible_publicamente BOOLEAN,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    ciudadano_nombre VARCHAR,
+    resolucion_comentario TEXT,
+    resolucion_evidencia BYTEA,
+    resolucion_mime_type VARCHAR
+) AS $$
+BEGIN
+    RETURN QUERY 
+    SELECT 
+        d.id, d.ciudadano_id, d.titulo, d.descripcion, d.categoria, d.ubicacion, 
+        d.latitud, d.longitud, d.distrito, d.fotografia, d.estado, d.fecha_reporte, 
+        d.fecha_resolucion, d.comentarios_ciudadano, d.prioridad, d.visible_publicamente, 
+        d.created_at, d.updated_at,
+        c.nombre_completo as ciudadano_nombre,
+        aa.descripcion as resolucion_comentario,
+        aa.fotografia_evidencia as resolucion_evidencia,
+        aa.evidencia_mime_type as resolucion_mime_type
+    FROM denuncias d
+    LEFT JOIN ciudadanos c ON d.ciudadano_id = c.id
+    LEFT JOIN actualizaciones_autoridad aa ON d.id = aa.denuncia_id AND aa.tipo_actualizacion = 'completacion'
+    ORDER BY d.fecha_reporte DESC 
+    LIMIT p_limit;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 3. sp_denuncia_find_by_citizen (SELECT for Citizen)
+DROP FUNCTION IF EXISTS sp_denuncia_find_by_citizen(INTEGER);
+CREATE OR REPLACE FUNCTION sp_denuncia_find_by_citizen(p_id INTEGER)
+RETURNS TABLE (
+    id INTEGER,
+    ciudadano_id INTEGER,
+    titulo VARCHAR,
+    descripcion TEXT,
+    categoria VARCHAR,
+    ubicacion VARCHAR,
+    latitud DECIMAL,
+    longitud DECIMAL,
+    distrito VARCHAR,
+    fotografia BYTEA,
+    estado VARCHAR,
+    fecha_reporte TIMESTAMP,
+    fecha_resolucion TIMESTAMP,
+    comentarios_ciudadano TEXT,
+    prioridad VARCHAR,
+    visible_publicamente BOOLEAN,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    resolucion_comentario TEXT,
+    resolucion_evidencia BYTEA,
+    resolucion_mime_type VARCHAR
+) AS $$
+BEGIN
+    RETURN QUERY 
+    SELECT 
+        d.id, d.ciudadano_id, d.titulo, d.descripcion, d.categoria, d.ubicacion, 
+        d.latitud, d.longitud, d.distrito, d.fotografia, d.estado, d.fecha_reporte, 
+        d.fecha_resolucion, d.comentarios_ciudadano, d.prioridad, d.visible_publicamente, 
+        d.created_at, d.updated_at,
+        aa.descripcion as resolucion_comentario,
+        aa.fotografia_evidencia as resolucion_evidencia,
+        aa.evidencia_mime_type as resolucion_mime_type
+    FROM denuncias d
+    LEFT JOIN actualizaciones_autoridad aa ON d.id = aa.denuncia_id AND aa.tipo_actualizacion = 'completacion'
+    WHERE d.ciudadano_id = p_id
+    ORDER BY d.fecha_reporte DESC;
+END;
+$$ LANGUAGE plpgsql;
+
+-- UPDATED sp_denuncia_find_by_id to include resolution details for Tracking
+DROP FUNCTION IF EXISTS sp_denuncia_find_by_id(INTEGER);
+CREATE OR REPLACE FUNCTION sp_denuncia_find_by_id(p_id INTEGER)
+RETURNS TABLE (
+    id INTEGER,
+    ciudadano_id INTEGER,
+    titulo VARCHAR,
+    descripcion TEXT,
+    categoria VARCHAR,
+    ubicacion VARCHAR,
+    latitud DECIMAL,
+    longitud DECIMAL,
+    distrito VARCHAR,
+    fotografia BYTEA,
+    estado VARCHAR,
+    fecha_reporte TIMESTAMP,
+    fecha_resolucion TIMESTAMP,
+    comentarios_ciudadano TEXT,
+    prioridad VARCHAR,
+    visible_publicamente BOOLEAN,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    resolucion_comentario TEXT,
+    resolucion_evidencia BYTEA,
+    resolucion_mime_type VARCHAR
+) AS $$
+BEGIN
+    RETURN QUERY 
+    SELECT 
+        d.id, d.ciudadano_id, d.titulo, d.descripcion, d.categoria, d.ubicacion, 
+        d.latitud, d.longitud, d.distrito, d.fotografia, d.estado, d.fecha_reporte, 
+        d.fecha_resolucion, d.comentarios_ciudadano, d.prioridad, d.visible_publicamente, 
+        d.created_at, d.updated_at,
+        aa.descripcion as resolucion_comentario,
+        aa.fotografia_evidencia as resolucion_evidencia,
+        aa.evidencia_mime_type as resolucion_mime_type
+    FROM denuncias d
+    LEFT JOIN actualizaciones_autoridad aa ON d.id = aa.denuncia_id AND aa.tipo_actualizacion = 'completacion'
+    WHERE d.id = p_id;
 END;
 $$ LANGUAGE plpgsql;

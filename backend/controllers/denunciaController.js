@@ -3,7 +3,14 @@ import { Denuncia } from '../models/Denuncia.js';
 export const getDenuncias = async (req, res) => {
     try {
         const denuncias = await Denuncia.findAll(100);
-        res.json(denuncias);
+        // Convert Buffer to Base64 for frontend display
+        const processedDenuncias = denuncias.map(d => {
+            if (d.fotografia) {
+                d.fotografia = d.fotografia.toString('base64');
+            }
+            return d;
+        });
+        res.json(processedDenuncias);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Error al obtener denuncias' });
@@ -14,7 +21,17 @@ export const getDenunciasByCiudadano = async (req, res) => {
     try {
         const { id } = req.params;
         const denuncias = await Denuncia.findByCitizenId(id);
-        res.json(denuncias);
+        // Convert Buffer to Base64
+        const processedDenuncias = denuncias.map(d => {
+            if (d.fotografia) {
+                d.fotografia = d.fotografia.toString('base64');
+            }
+            if (d.resolucion_evidencia) {
+                d.resolucion_evidencia = d.resolucion_evidencia.toString('base64');
+            }
+            return d;
+        });
+        res.json(processedDenuncias);
     } catch (err) {
         console.error('Error fetching user reports:', err);
         res.status(500).json({ error: 'Error al obtener denuncias del ciudadano' });
@@ -46,14 +63,15 @@ export const updateDenunciaStatus = async (req, res) => {
         }
 
         // Handle Evidence for Finalized Reports
-        if (estado === 'Resuelta' && evidencia) {
-            const evidenciaBuffer = Buffer.from(evidencia, 'base64');
+        if (estado === 'Resuelta' && (evidencia || comentario)) {
+            const evidenciaBuffer = evidencia ? Buffer.from(evidencia, 'base64') : null;
             await Denuncia.addAuthorityUpdate({
                 denuncia_id: id,
-                autoridad_id: autoridad_id || null, // Should come from auth token ideally
+                autoridad_id: autoridad_id || null, 
                 tipo_actualizacion: 'completacion',
-                descripcion: comentario || 'Denuncia resuelta con evidencia adjunta.',
+                descripcion: comentario || 'Denuncia resuelta.',
                 fotografia_evidencia: evidenciaBuffer,
+                mime_type: req.body.mime_type, // Pass mime type from request
                 visible_para_ciudadano: true
             });
         }
@@ -96,7 +114,10 @@ export const trackDenuncia = async (req, res) => {
             estado: denuncia.estado,
             fecha_reporte: denuncia.fecha_reporte,
             categoria: denuncia.categoria,
-            ubicacion: denuncia.ubicacion
+            ubicacion: denuncia.ubicacion,
+            resolucion_comentario: denuncia.resolucion_comentario,
+            resolucion_evidencia: denuncia.resolucion_evidencia ? denuncia.resolucion_evidencia.toString('base64') : null,
+            resolucion_mime_type: denuncia.resolucion_mime_type
         });
     } catch (err) {
         console.error('Error tracking denuncia:', err);
@@ -140,7 +161,7 @@ export const checkDenuncias = async (req, res) => {
             return res.status(400).json({ error: 'Parámetro de búsqueda requerido' });
         }
 
-        const queryTerm = q.trim();
+        const queryTerm = q.trim().toUpperCase();
 
         // 1. Check for Vehicle Plate (Exact or close match)
         const plateCount = await Denuncia.checkPlate(queryTerm);
