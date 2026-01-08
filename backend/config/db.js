@@ -11,6 +11,8 @@ dotenv.config({ path: path.join(__dirname, '..', '.env') });
 const { Pool } = pg;
 
 console.log('--- DB CONFIG ---');
+console.log('DATABASE_URL exists:', !!process.env.DATABASE_URL);
+console.log('NODE_ENV:', process.env.NODE_ENV);
 const databaseUrl = process.env.DATABASE_URL;
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -28,6 +30,12 @@ const connectionConfig = databaseUrl
         port: process.env.PGPORT,
         ssl: false
     };
+
+console.log('Using DATABASE_URL:', !!databaseUrl);
+console.log('Connection config:', { 
+    hasConnectionString: !!connectionConfig.connectionString,
+    ssl: connectionConfig.ssl 
+});
 
 const pool = new Pool(connectionConfig);
 
