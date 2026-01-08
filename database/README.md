@@ -333,4 +333,4 @@ Este proyecto forma parte del Sistema de Denuncias Ciudadanas.
 
 ---
 
-**Última actualización:** Noviembre 2024
+**Última actualización:** Enero 2026

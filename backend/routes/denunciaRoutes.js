@@ -7,7 +7,6 @@ import {
     assignDenuncia,
     trackDenuncia,
     createAnonymousDenuncia,
-    createAnonymousDenuncia,
     checkDenuncias,
     getEstadisticas
 } from '../controllers/denunciaController.js';
