@@ -766,6 +766,7 @@ $$ LANGUAGE plpgsql;
 -- ============================================================================
 
 -- Function to find user by email (for authController)
+DROP FUNCTION IF EXISTS sp_usuario_find_by_email(VARCHAR, VARCHAR);
 CREATE OR REPLACE FUNCTION sp_usuario_find_by_email(
     p_email VARCHAR,
     p_table VARCHAR
@@ -796,13 +797,27 @@ CREATE OR REPLACE FUNCTION sp_usuario_find_by_id(
     p_id INTEGER,
     p_table VARCHAR
 )
-RETURNS SETOF citizens_or_authorities_type AS $$ -- Temporary simplistic approach, usually separate functions better
+-- Function to find user by ID
+DROP FUNCTION IF EXISTS sp_usuario_find_by_id(INTEGER, VARCHAR);
+CREATE OR REPLACE FUNCTION sp_usuario_find_by_id(
+    p_id INTEGER,
+    p_table VARCHAR
+)
+RETURNS TABLE (
+    id INTEGER,
+    nombre_completo VARCHAR,
+    email VARCHAR,
+    password_hash VARCHAR,
+    rol VARCHAR,
+    tipo VARCHAR
+) AS $$
 DECLARE
 BEGIN
-    -- This generic approach is tricky with different table structures.
-    -- Better to have specific functions as hinted by finding usage.
-    -- However, for now, let's implement checking the logic needed.
-    NULL;
+    IF p_table = 'ciudadanos' THEN
+        RETURN QUERY SELECT c.id, c.nombre_completo, c.email, c.password_hash, 'Ciudadano'::VARCHAR as rol, 'ciudadanos'::VARCHAR as tipo FROM ciudadanos c WHERE c.id = p_id;
+    ELSIF p_table = 'autoridades' THEN
+        RETURN QUERY SELECT a.id, a.nombre_completo, a.email, a.password_hash, a.rol, 'autoridades'::VARCHAR as tipo FROM autoridades a WHERE a.id = p_id;
+    END IF;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -811,30 +826,8 @@ $$ LANGUAGE plpgsql;
 -- Backend expects columns: id, nombre_completo, email, password_hash, rol (for auth), etc.
 
 -- Let's create specific functions for what the backend needs based on models analysis.
+-- NOTE: sp_usuario_find_by_email is already defined above (line ~770), so we skip the duplicate here.
 
--- 1. sp_usuario_find_by_email
-CREATE OR REPLACE FUNCTION sp_usuario_find_by_email(p_email VARCHAR, p_table VARCHAR)
-RETURNS TABLE (
-    id INTEGER,
-    nombre_completo VARCHAR,
-    email VARCHAR,
-    password_hash VARCHAR,
-    rol VARCHAR,
-    dni VARCHAR,         -- Added for some contexts
-    fotografia_perfil BYTEA -- Added if needed
-) AS $$
-BEGIN
-    IF p_table = 'ciudadanos' THEN
-        RETURN QUERY 
-        SELECT c.id, c.nombre_completo, c.email, c.password_hash, CAST('ciudadano' AS VARCHAR), c.dni, c.fotografia_perfil
-        FROM ciudadanos c WHERE c.email = p_email;
-    ELSE
-        RETURN QUERY 
-        SELECT a.id, a.nombre_completo, a.email, a.password_hash, a.rol, CAST(NULL AS VARCHAR), a.fotografia_perfil
-        FROM autoridades a WHERE a.email = p_email;
-    END IF;
-END;
-$$ LANGUAGE plpgsql;
 
 -- 2. sp_ciudadano_find_by_dni
 CREATE OR REPLACE FUNCTION sp_ciudadano_find_by_dni(p_dni VARCHAR)
