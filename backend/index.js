@@ -18,20 +18,28 @@ const PORT = process.env.PORT || 4000;
 
 // Configurar CORS
 app.use((req, res, next) => {
-  const allowedOrigins = [
-    'http://localhost:5173',
-    'http://localhost:5174',
-    ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : [])
-  ].filter(Boolean);
+  const frontendUrl = process.env.FRONTEND_URL || '*';
+  
+  // Si es *, permitir cualquier origen
+  if (frontendUrl === '*') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  } else {
+    // Lista de orígenes permitidos
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'http://localhost:5174',
+      ...frontendUrl.split(',').map(url => url.trim())
+    ].filter(Boolean);
 
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+    }
   }
 
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
 
   if (req.method === 'OPTIONS') {
     return res.sendStatus(200);
